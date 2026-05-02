@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="public/logo.png" alt="STAK'D Logo" width="180" />
+  <br/>
+  <h1>STAK'D</h1>
+  <p><strong>Premium Built-to-Order E-Commerce & Operations Platform</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/Stripe-626CD9?style=for-the-badge&logo=Stripe&logoColor=white" alt="Stripe" />
+  </p>
+</div>
 
-## Getting Started
+<br/>
 
-First, run the development server:
+## 🍫 About The Project
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**STAK'D** is a bespoke, end-to-end e-commerce and operations platform crafted for a premium baked goods business. It provides a highly visual, high-performance storefront designed to highlight rich textures and custom flavor profiles. 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Beyond the customer-facing shop, STAK'D features a **custom-built internal operations dashboard**. It completely automates daily workflows—from one-click kitchen prep lists to batch order management and seamless generation of formatted shipping labels (Royal Mail, Evri, Yodel).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+<br/>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Key Features
 
-## Learn More
+### 🛍️ The Storefront
+- **Immersive UI/UX:** A bespoke design system built from scratch with Vanilla CSS—focusing on glassmorphism, fluid typography, and premium modern tokens.
+- **Dynamic Cart & Checkout:** Powered by Zustand for instant state management and integrated securely with Stripe Checkout.
+- **Real-Time Order Tracking:** Customers can view the live fulfillment status of their orders directly on their profile.
 
-To learn more about Next.js, take a look at the following resources:
+### ⚙️ The Admin Operations Dashboard
+- **Fulfillment Automation:** Track orders through customizable stages (Received ➔ Preparing ➔ Baked ➔ Shipped).
+- **Batching & Prep Lists:** Select specific orders to aggregate ingredient lists instantly for kitchen staff.
+- **Shipping Export:** Generate perfectly formatted CSVs tailored for direct import into major UK couriers.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<br/>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ The Tech Stack
 
-## Deploy on Vercel
+| Category | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 15 (App Router, Turbopack), React, TypeScript |
+| **Styling** | Vanilla CSS (Bespoke architecture, no utility frameworks) |
+| **Backend & DB** | Supabase (PostgreSQL), Next.js Server API Routes |
+| **Payments** | Stripe Integration with Webhooks |
+| **State** | Zustand |
+| **Icons** | Lucide React |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<br/>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Roadmap & Active Development
+
+We are constantly refining the platform to support greater scale and customization.
+
+- **[In Progress]** Migration of mock data to a fully dynamic Supabase schema.
+- **[In Progress]** Automated syncing of operational data directly to external Google Sheets.
+- **[Planned]** Automated transactional emails via Resend (Baking updates, tracking links).
+- **[Planned]** Dynamic inventory routing for overriding base chocolate defaults.
+
+<br/>
+
+---
+<div align="center">
+  <p><em>Built with precision for the ultimate texture experience.</em></p>
+</div>
