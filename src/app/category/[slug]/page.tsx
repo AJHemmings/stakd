@@ -104,7 +104,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--choc-mid)' }}>
                       £{product.price.toFixed(2)}
                     </span>
-                    <span className="eyebrow" style={{ color: 'var(--gold)' }}>Select Base &rarr;</span>
+                    <span className="eyebrow" style={{
+                      color: 'var(--cream)',
+                      background: 'var(--choc-mid)',
+                      padding: '0.3rem 0.8rem',
+                      borderRadius: '2px',
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.12em'
+                    }}>Coming Soon</span>
                   </div>
                 </div>
               </div>

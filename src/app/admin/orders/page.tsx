@@ -101,7 +101,7 @@ export default function AdminOrdersPage() {
         notes: o.notes,
         batchId: o.batch_id
       }));
-      setOrders(mappedOrders.length > 0 ? mappedOrders : MOCK_ORDERS);
+      setOrders(mappedOrders);
     }
     setLoading(false);
   };

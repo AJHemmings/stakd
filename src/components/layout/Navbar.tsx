@@ -1,18 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useCartStore } from '../../store/cart';
 
 export function Navbar() {
-  const getTotalItems = useCartStore((state) => state.getTotalItems);
-  
-  // Hydration fix for Zustand
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <nav style={{
       position: 'sticky', top: 0, zIndex: 100,
@@ -40,15 +31,6 @@ export function Navbar() {
             textTransform: 'uppercase', fontWeight: 600
           }}>
             Account
-          </Link>
-        </li>
-        <li>
-          <Link href="/cart" style={{
-            color: 'var(--cream-dark)',
-            fontSize: '0.85rem', letterSpacing: '0.08em',
-            textTransform: 'uppercase', fontWeight: 600
-          }}>
-            Cart ({mounted ? getTotalItems() : 0})
           </Link>
         </li>
       </ul>

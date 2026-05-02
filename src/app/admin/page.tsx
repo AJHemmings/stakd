@@ -9,11 +9,7 @@ export default async function AdminDashboard() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  const orders = dbOrders?.length ? dbOrders : [
-    { id: '1042-uuid', customer_name: 'Alex Johnson', created_at: new Date().toISOString(), payment_status: 'paid', total_amount: 13.98 },
-    { id: '1041-uuid', customer_name: 'Sam Smith', created_at: new Date(Date.now() - 86400000).toISOString(), payment_status: 'pending', total_amount: 7.49 },
-    { id: '1040-uuid', customer_name: 'Emma Watson', created_at: new Date(Date.now() - 172800000).toISOString(), payment_status: 'paid', total_amount: 25.47 },
-  ];
+  const orders = dbOrders || [];
 
   const totalSales = orders.reduce((acc, o) => acc + Number(o.total_amount), 0) || 0;
   const totalOrders = orders.length || 0;

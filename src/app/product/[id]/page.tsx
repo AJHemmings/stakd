@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState, use } from 'react';
+import React, { use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '../../../components/ui/Button';
-import { useCartStore } from '../../../store/cart';
 import Image from 'next/image';
 
 // Mock database (in real app, fetch from Supabase)
@@ -24,22 +22,12 @@ const PRODUCTS = {
   'ny-cheesecake': { name: 'NY Vanilla Cheesecake', basePrice: 7.99, description: 'Baked vanilla cheesecake filling.' },
 };
 
-const BASES = [
-  { id: 'milk', name: 'Milk Chocolate', priceModifier: 0 },
-  { id: 'dark', name: 'Dark Chocolate', priceModifier: 0 },
-  { id: 'white', name: 'White Chocolate', priceModifier: 0.50 }, // White chocolate costs slightly more
-];
-
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  // Next.js 15+ async params
   const resolvedParams = use(params);
   const productId = resolvedParams.id;
-  
+
   const product = PRODUCTS[productId as keyof typeof PRODUCTS];
   const router = useRouter();
-  
-  const [selectedBase, setSelectedBase] = useState<string | null>(null);
-  const addItem = useCartStore((state) => state.addItem);
 
   if (!product) {
     return (
@@ -49,26 +37,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       </div>
     );
   }
-
-  const currentPriceModifier = selectedBase ? (BASES.find(b => b.id === selectedBase)?.priceModifier || 0) : 0;
-  const finalPrice = product.basePrice + currentPriceModifier;
-
-  const handleAddToCart = () => {
-    if (!selectedBase) return;
-    const baseName = BASES.find(b => b.id === selectedBase)?.name || '';
-    
-    addItem({
-      productId,
-      name: product.name,
-      baseId: selectedBase,
-      baseName,
-      price: finalPrice,
-      quantity: 1
-    });
-    
-    // Optional: Could show a toast notification here
-    alert("Added to basket!");
-  };
 
   return (
     <div className="container" style={{ padding: '4rem 2rem', paddingBottom: '8rem' }}>
@@ -115,34 +83,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             {product.name}
           </h1>
           <p style={{ fontSize: '1.5rem', fontFamily: 'var(--font-mono)', color: 'var(--choc-mid)', fontWeight: 700, marginBottom: '2rem' }}>
-            £{finalPrice.toFixed(2)}
+            £{product.basePrice.toFixed(2)}
           </p>
           <p style={{ fontSize: '1rem', color: 'var(--grey)', marginBottom: '3rem', lineHeight: '1.8' }}>
             {product.description}
           </p>
 
-          <div style={{ marginBottom: '3rem' }}>
-            <p className="eyebrow" style={{ marginBottom: '1rem', color: 'var(--dark)' }}>01 — Add to Order</p>
-            <p style={{ color: 'var(--grey)' }}>Custom base selections are currently disabled. You will receive our standard signature base.</p>
+          <div style={{
+            border: '1px solid rgba(201,168,76,0.3)',
+            borderRadius: '4px',
+            padding: '2rem',
+            textAlign: 'center',
+            background: 'rgba(201,168,76,0.04)'
+          }}>
+            <p className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '0.75rem' }}>Coming Soon</p>
+            <p style={{ color: 'var(--grey)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
+              Orders will open shortly. Check back soon.
+            </p>
           </div>
-
-          <Button 
-            variant="primary" 
-            style={{ width: '100%', padding: '1.2rem', fontSize: '1.1rem' }}
-            onClick={() => {
-              addItem({
-                productId,
-                name: product.name,
-                baseId: 'milk',
-                baseName: 'Milk Chocolate',
-                price: product.basePrice,
-                quantity: 1
-              });
-              alert("Added to basket!");
-            }}
-          >
-            Add to Basket
-          </Button>
 
         </div>
       </div>
