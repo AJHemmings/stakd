@@ -1,7 +1,6 @@
 <div align="center">
   <img src="public/hero-logo.png" alt="STAK'D Hero Logo" width="400" />
   <br/>
-  <h1>STAK'D</h1>
   <p><strong>Premium Built-to-Order E-Commerce & Operations Platform</strong></p>
   <p>
     <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
