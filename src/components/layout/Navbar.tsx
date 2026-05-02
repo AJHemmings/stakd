@@ -33,6 +33,18 @@ export function Navbar() {
             Account
           </Link>
         </li>
+        <li>
+          <Link href="/cart" style={{
+            color: 'var(--grey)',
+            fontSize: '0.85rem', letterSpacing: '0.08em',
+            textTransform: 'uppercase', fontWeight: 600,
+            opacity: 0.45,
+            pointerEvents: 'none',
+            cursor: 'default'
+          }}>
+            Cart (0)
+          </Link>
+        </li>
       </ul>
     </nav>
   );
