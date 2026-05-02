@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.png" alt="STAK'D Logo" width="180" />
+  <img src="public/hero-logo.png" alt="STAK'D Hero Logo" width="400" />
   <br/>
   <h1>STAK'D</h1>
   <p><strong>Premium Built-to-Order E-Commerce & Operations Platform</strong></p>
