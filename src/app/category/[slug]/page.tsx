@@ -3,34 +3,35 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 // Mock database for now
+// Toggle limitedTime / soldOut per product to show/hide badges
 const CATEGORY_DATA = {
   cookie: {
     title: 'Cookie Series',
     description: 'Crunchy, chewy, and loaded with inclusions. The ultimate texture experience.',
     products: [
-      { id: 'plain-cookie-dough', name: 'Plain Cookie Dough', price: 5.99, image: '/cookie.png' },
-      { id: 'choc-chip-cookie-dough', name: 'Chocolate Chip Cookie Dough', price: 6.99, image: '/cookie.png' },
-      { id: 'dark-choc-chip-cookie-dough', name: 'Dark Choc Chip Cookie Dough', price: 6.99, image: '/cookie.png' },
-      { id: 'pistachio-cookie-dough', name: 'Pistachio Cookie Dough', price: 7.99, image: '/cookie.png' },
-      { id: 'peanut-butter-cookie-dough', name: 'Peanut Butter Cookie Dough', price: 6.99, image: '/cookie.png' },
-      { id: 'fudge-cookie-dough', name: 'Fudge Cookie Dough', price: 6.49 },
+      { id: 'plain-cookie-dough', name: 'Plain Cookie Dough', price: 5.99, image: '/cookie.png', limitedTime: false, soldOut: false },
+      { id: 'choc-chip-cookie-dough', name: 'Chocolate Chip Cookie Dough', price: 6.99, image: '/cookie.png', limitedTime: false, soldOut: false },
+      { id: 'dark-choc-chip-cookie-dough', name: 'Dark Choc Chip Cookie Dough', price: 6.99, image: '/cookie.png', limitedTime: false, soldOut: false },
+      { id: 'pistachio-cookie-dough', name: 'Pistachio Cookie Dough', price: 7.99, image: '/cookie.png', limitedTime: true, soldOut: false },
+      { id: 'peanut-butter-cookie-dough', name: 'Peanut Butter Cookie Dough', price: 6.99, image: '/cookie.png', limitedTime: false, soldOut: false },
+      { id: 'fudge-cookie-dough', name: 'Fudge Cookie Dough', price: 6.49, limitedTime: false, soldOut: false },
     ]
   },
   cake: {
     title: 'Cake Series',
     description: 'Soft, rich sponge cake enveloped in our signature thick chocolate shell.',
     products: [
-      { id: 'classic-sponge', name: 'Classic Vanilla Sponge', price: 5.99, image: '/sponge.png' },
-      { id: 'coffee-walnut', name: 'Coffee & Walnut', price: 6.99, image: '/coffee-cake.png' },
-      { id: 'rich-brownie', name: 'Rich Fudge Brownie', price: 7.49, image: '/brownie.png' },
+      { id: 'classic-sponge', name: 'Classic Vanilla Sponge', price: 5.99, image: '/sponge.png', limitedTime: false, soldOut: false },
+      { id: 'coffee-walnut', name: 'Coffee & Walnut', price: 6.99, image: '/coffee-cake.png', limitedTime: false, soldOut: false },
+      { id: 'rich-brownie', name: 'Rich Fudge Brownie', price: 7.49, image: '/brownie.png', limitedTime: false, soldOut: true },
     ]
   },
   fusion: {
     title: 'Fusion Series',
     description: 'Wild flavor combinations. Caramel, cheesecake, and specialty fillings.',
     products: [
-      { id: 'peanut-butter-salted-caramel', name: 'Peanut Butter and Salted Caramel Pretzel', price: 7.49 },
-      { id: 'ny-cheesecake', name: 'NY Vanilla Cheesecake', price: 7.99 },
+      { id: 'peanut-butter-salted-caramel', name: 'Peanut Butter and Salted Caramel Pretzel', price: 7.49, limitedTime: false, soldOut: false },
+      { id: 'ny-cheesecake', name: 'NY Vanilla Cheesecake', price: 7.99, limitedTime: false, soldOut: false },
     ]
   }
 };
@@ -92,6 +93,31 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                     <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--gold)', fontSize: '0.8rem', letterSpacing: '0.1em' }}>
                       [ Cross Section Image ]
                     </span>
+                  )}
+                  {(product.limitedTime || product.soldOut) && (
+                    <div style={{
+                      position: 'absolute', top: '0.75rem', right: '0.75rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'flex-end',
+                      zIndex: 2
+                    }}>
+                      {product.limitedTime && (
+                        <span style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.12em',
+                          color: 'var(--gold-light)', background: 'rgba(17,17,16,0.9)',
+                          border: '1px solid var(--gold-light)', borderRadius: '2px',
+                          padding: '0.35rem 0.7rem',
+                          boxShadow: '0 0 8px rgba(232,201,106,0.35)'
+                        }}>LIMITED TIME</span>
+                      )}
+                      {product.soldOut && (
+                        <span style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em',
+                          color: 'var(--grey)', background: 'rgba(17,17,16,0.88)',
+                          border: '1px solid rgba(136,136,128,0.4)', borderRadius: '2px',
+                          padding: '0.3rem 0.6rem'
+                        }}>SOLD OUT</span>
+                      )}
+                    </div>
                   )}
                 </div>
 

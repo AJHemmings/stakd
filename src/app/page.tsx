@@ -49,6 +49,21 @@ export default function Home() {
           Made to order. Stacked with filling. No compromise.
         </p>
 
+        {/* Quality trust badge */}
+        <div style={{ marginTop: '2rem' }}>
+          <span style={{
+            fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.1em',
+            color: 'rgba(245,240,232,0.55)',
+            border: '2px solid var(--gold)',
+            borderRadius: '100px',
+            padding: '0.4rem 1.4rem',
+            background: 'rgba(201,168,76,0.04)',
+            whiteSpace: 'nowrap'
+          }}>
+            COUVERTURE CHOCOLATE &nbsp;·&nbsp; REAL INGREDIENTS &nbsp;·&nbsp; NO PALM OIL &nbsp;·&nbsp; NO E-NUMBERS
+          </span>
+        </div>
+
         {/* Category Icons Selection */}
         <div style={{
           marginTop: '4rem',
