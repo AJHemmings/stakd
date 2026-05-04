@@ -50,18 +50,26 @@ export default function Home() {
         </p>
 
         {/* Quality trust badge */}
-        <div style={{ marginTop: '2rem' }}>
-          <span style={{
+        <div style={{ marginTop: '2rem', maxWidth: '90vw' }}>
+          <div className="hero-badge" style={{
             fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.1em',
             color: 'rgba(245,240,232,0.55)',
             border: '2px solid var(--gold)',
             borderRadius: '100px',
             padding: '0.4rem 1.4rem',
             background: 'rgba(201,168,76,0.04)',
-            whiteSpace: 'nowrap'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
-            COUVERTURE CHOCOLATE &nbsp;·&nbsp; REAL INGREDIENTS &nbsp;·&nbsp; NO PALM OIL &nbsp;·&nbsp; NO E-NUMBERS
-          </span>
+            <span>COUVERTURE CHOCOLATE</span>
+            <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
+            <span>REAL INGREDIENTS</span>
+            <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
+            <span>NO PALM OIL</span>
+            <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
+            <span>NO E-NUMBERS</span>
+          </div>
         </div>
 
         {/* Category Icons Selection */}
@@ -132,6 +140,17 @@ export default function Home() {
         }
         .category-icon-link:hover span {
           color: var(--gold) !important;
+        }
+        @media (max-width: 600px) {
+          .hero-badge {
+            flex-direction: column !important;
+            border-radius: 12px !important;
+            padding: 0.7rem 1.2rem !important;
+            gap: 0.4rem;
+          }
+          .hero-badge-sep {
+            display: none;
+          }
         }
       `}} />
     </div>
