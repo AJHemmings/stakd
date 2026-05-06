@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, Suspense } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { createClient } from '../../utils/supabase/client';
 
-export default function LoginPage() {
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   
   const supabase = createClient();
 
@@ -42,7 +44,9 @@ export default function LoginPage() {
           password,
         });
         if (error) throw error;
-        router.push('/profile');
+        
+        const redirectUrl = searchParams.get('redirect') || '/profile';
+        router.push(redirectUrl);
         router.refresh();
       }
     } catch (err: any) {
@@ -102,5 +106,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '6rem 2rem', textAlign: 'center' }}>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

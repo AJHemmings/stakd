@@ -29,7 +29,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" style={{ color: 'var(--cream-dark)' }}>Dashboard</Link>
           <Link href="/admin/orders" style={{ color: 'var(--cream-dark)' }}>Orders</Link>
           <Link href="/admin/products" style={{ color: 'var(--cream-dark)' }}>Products</Link>
-          <Link href="/admin/recipes" style={{ color: 'var(--cream-dark)' }}>Recipes</Link>
         </nav>
         
         <div style={{ marginTop: 'auto' }}>

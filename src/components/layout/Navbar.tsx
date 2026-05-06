@@ -1,9 +1,12 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
+import { createClient } from '../../utils/supabase/server';
+import { CartCount } from '../cart/CartCount';
 
-export function Navbar() {
+export async function Navbar() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <nav style={{
       position: 'sticky', top: 0, zIndex: 100,
@@ -25,24 +28,36 @@ export function Navbar() {
         listStyle: 'none', display: 'flex', gap: '2.5rem', margin: 0, padding: 0
       }}>
         <li>
-          <Link href="/profile" style={{
+          <Link href={user ? "/profile" : "/login"} style={{
             color: 'var(--cream-dark)',
             fontSize: '0.85rem', letterSpacing: '0.08em',
             textTransform: 'uppercase', fontWeight: 600
           }}>
-            Account
+            {user ? "Account" : "Log In"}
           </Link>
         </li>
+        {user?.user_metadata?.role === 'admin' && (
+          <li>
+            <Link href="/admin" style={{
+              color: 'var(--gold)',
+              fontSize: '0.85rem', letterSpacing: '0.08em',
+              textTransform: 'uppercase', fontWeight: 700,
+              background: 'rgba(201,168,76,0.1)',
+              padding: '0.4rem 0.8rem',
+              borderRadius: '2px',
+              border: '1px solid var(--gold)'
+            }}>
+              Dashboard
+            </Link>
+          </li>
+        )}
         <li>
           <Link href="/cart" style={{
-            color: 'var(--grey)',
+            color: 'var(--cream-dark)',
             fontSize: '0.85rem', letterSpacing: '0.08em',
-            textTransform: 'uppercase', fontWeight: 600,
-            opacity: 0.45,
-            pointerEvents: 'none',
-            cursor: 'default'
+            textTransform: 'uppercase', fontWeight: 600
           }}>
-            Cart (0)
+            <CartCount />
           </Link>
         </li>
       </ul>

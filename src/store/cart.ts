@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface CartItem {
   id: string;
@@ -20,7 +21,9 @@ interface CartStore {
   getTotalItems: () => number;
 }
 
-export const useCartStore = create<CartStore>()((set, get) => ({
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
   items: [],
   addItem: (item) => {
     const id = `${item.productId}-${item.baseId}`;
@@ -49,4 +52,10 @@ export const useCartStore = create<CartStore>()((set, get) => ({
     get().items.reduce((total, item) => total + item.price * item.quantity, 0),
   getTotalItems: () =>
     get().items.reduce((total, item) => total + item.quantity, 0),
-}));
+    }),
+    {
+      name: 'stakd-cart-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);

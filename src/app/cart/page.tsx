@@ -106,20 +106,20 @@ export default function CartPage() {
               <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '1.2rem', color: 'var(--choc-mid)' }}>£{total.toFixed(2)}</span>
             </div>
 
-            {/* Disabled checkout — ordering not live yet */}
-            <button
-              disabled
-              style={{
-                width: '100%', padding: '1rem',
-                background: 'var(--cream-dark)', color: 'var(--grey)',
-                border: 'none', borderRadius: '2px',
-                fontFamily: 'var(--font-mono)', fontSize: '0.85rem',
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                cursor: 'not-allowed', opacity: 0.5
-              }}
-            >
-              Checkout — Coming Soon
-            </button>
+            <Link href="/checkout" style={{ textDecoration: 'none' }}>
+              <button
+                style={{
+                  width: '100%', padding: '1rem',
+                  background: 'var(--gold)', color: 'var(--black)',
+                  border: 'none', borderRadius: '2px',
+                  fontFamily: 'var(--font-mono)', fontSize: '0.85rem',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                Proceed to Checkout
+              </button>
+            </Link>
           </div>
 
         </div>

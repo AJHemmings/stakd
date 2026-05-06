@@ -1,34 +1,27 @@
-"use client";
-
-import React, { use } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { getProductBySlug } from '../../../utils/supabase/queries';
+import { AddToCartForm } from '../../../components/product/AddToCartForm';
+import { IngredientsModal } from '../../../components/product/IngredientsModal';
 
-// Mock database (in real app, fetch from Supabase)
-// Toggle limitedTime / soldOut per product to show/hide badges
-const PRODUCTS = {
-  'plain-cookie-dough': { name: 'Plain Cookie Dough', basePrice: 5.99, description: 'Our signature thick cookie dough, completely unadulterated. Pure, rich, and gooey.', image: '/cookie.png', limitedTime: false, soldOut: false },
-  'choc-chip-cookie-dough': { name: 'Chocolate Chip Cookie Dough', basePrice: 6.99, description: 'Classic cookie dough loaded with premium Belgian chocolate chips.', image: '/cookie.png', limitedTime: false, soldOut: false },
-  'dark-choc-chip-cookie-dough': { name: 'Dark Choc Chip Cookie Dough', basePrice: 6.99, description: 'Rich cookie dough with intense 70% dark chocolate chips.', image: '/cookie.png', limitedTime: false, soldOut: false },
-  'pistachio-cookie-dough': { name: 'Pistachio Cookie Dough', basePrice: 7.99, description: 'Premium roasted pistachios folded into our signature dough.', image: '/cookie.png', limitedTime: true, soldOut: false },
-  'peanut-butter-cookie-dough': { name: 'Peanut Butter Cookie Dough', basePrice: 6.99, description: 'Swirls of smooth peanut butter in rich cookie dough.', image: '/cookie.png', limitedTime: false, soldOut: false },
-  'fudge-cookie-dough': { name: 'Fudge Cookie Dough', basePrice: 6.49, description: 'Gooey fudge pieces mixed into our classic dough.', limitedTime: false, soldOut: false },
+export const dynamic = 'force-dynamic';
 
-  'classic-sponge': { name: 'Classic Vanilla Sponge', basePrice: 5.99, description: 'Light, fluffy Madagascar vanilla sponge cake.', image: '/sponge.png', limitedTime: false, soldOut: false },
-  'coffee-walnut': { name: 'Coffee & Walnut', basePrice: 6.99, description: 'Espresso-infused sponge with crushed toasted walnuts.', image: '/coffee-cake.png', limitedTime: false, soldOut: false },
-  'rich-brownie': { name: 'Rich Fudge Brownie', basePrice: 7.49, description: 'Dense, intensely chocolatey fudge brownie layer.', image: '/brownie.png', limitedTime: false, soldOut: true },
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: slug } = await params;
 
-  'salted-caramel': { name: 'Salted Caramel Flow', basePrice: 6.99, description: 'Liquid gold salted caramel that flows when you bite.', limitedTime: false, soldOut: false },
-  'ny-cheesecake': { name: 'NY Vanilla Cheesecake', basePrice: 7.99, description: 'Baked vanilla cheesecake filling.', limitedTime: false, soldOut: false },
-};
-
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const productId = resolvedParams.id;
-
-  const product = PRODUCTS[productId as keyof typeof PRODUCTS];
-  const router = useRouter();
+  let product;
+  try {
+    product = await getProductBySlug(slug);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return (
+      <div className="container" style={{ padding: '6rem 2rem', textAlign: 'center' }}>
+        <h1>Product not found</h1>
+        <Link href="/" className="btn btn-outline" style={{ marginTop: '2rem' }}>Back to Home</Link>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -41,22 +34,21 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="container" style={{ padding: '4rem 2rem', paddingBottom: '8rem' }}>
-      <button 
-        onClick={() => router.back()} 
+      <Link 
+        href={`/category/${product.categories.slug}`}
         style={{ 
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0, 
+          display: 'inline-block',
           fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)',
-          textDecoration: 'none'
+          textDecoration: 'none', marginBottom: '2rem'
         }}
       >
-        &larr; BACK
-      </button>
+        &larr; BACK TO {product.categories.name.toUpperCase()}
+      </Link>
 
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: '4rem',
-        marginTop: '2rem',
         alignItems: 'start'
       }}>
         {/* Left: Product Image */}
@@ -69,12 +61,28 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           position: 'relative',
           overflow: 'hidden'
         }}>
-          {('image' in product && typeof product.image === 'string') ? (
-            <Image src={product.image} alt={product.name} fill style={{ objectFit: 'cover' }} />
+          {product.image_url ? (
+            <Image src={product.image_url} alt={product.name} fill style={{ objectFit: 'cover' }} />
           ) : (
             <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--gold)' }}>
               [ High Quality Cross-Section Image ]
             </span>
+          )}
+          {product.badge_text && (
+            <div style={{
+              position: 'absolute', bottom: '20px', right: '20px',
+              background: 'var(--gold)', color: 'var(--black)',
+              width: '100px', height: '100px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: '1rem', fontSize: '0.8rem',
+              fontFamily: 'var(--font-mono)', fontWeight: 900, lineHeight: '1.2',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+              zIndex: 3, transform: 'rotate(-5deg)',
+              border: '3px solid var(--black)',
+              boxShadow: '0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.5)'
+            }}>
+              {product.badge_text}
+            </div>
           )}
         </div>
 
@@ -83,9 +91,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           <h1 style={{ fontSize: '3.5rem', lineHeight: '1.1', marginBottom: '0.75rem', color: 'var(--dark)' }}>
             {product.name}
           </h1>
-          {(product.limitedTime || product.soldOut) && (
+          {(product.limited_time || product.sold_out) && (
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              {product.limitedTime && (
+              {product.limited_time && (
                 <span style={{
                   fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.12em',
                   color: 'var(--gold-light)', border: '1px solid var(--gold-light)', borderRadius: '2px',
@@ -93,7 +101,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   boxShadow: '0 0 10px rgba(232,201,106,0.3)'
                 }}>LIMITED TIME</span>
               )}
-              {product.soldOut && (
+              {product.sold_out && (
                 <span style={{
                   fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.12em',
                   color: 'var(--grey)', border: '1px solid rgba(136,136,128,0.4)', borderRadius: '2px',
@@ -103,33 +111,31 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
           )}
           <p style={{ fontSize: '1.5rem', fontFamily: 'var(--font-mono)', color: 'var(--choc-mid)', fontWeight: 700, marginBottom: '2rem' }}>
-            £{product.basePrice.toFixed(2)}
+            £{Number(product.price).toFixed(2)}
           </p>
-          <p style={{ fontSize: '1rem', color: 'var(--grey)', marginBottom: '3rem', lineHeight: '1.8' }}>
+          <p style={{ fontSize: '1rem', color: 'var(--grey)', marginBottom: '1.5rem', lineHeight: '1.8' }}>
             {product.description}
           </p>
 
-          <div style={{
-            border: product.soldOut ? '1px solid rgba(136,136,128,0.25)' : '1px solid rgba(201,168,76,0.3)',
-            borderRadius: '4px',
-            padding: '2rem',
-            textAlign: 'center',
-            background: product.soldOut ? 'rgba(0,0,0,0.03)' : 'rgba(201,168,76,0.04)'
-          }}>
-            <p className="eyebrow" style={{ color: product.soldOut ? 'var(--grey)' : 'var(--gold)', marginBottom: '0.75rem' }}>
-              {product.soldOut ? 'Sold Out' : 'Coming Soon'}
-            </p>
-            <p style={{ color: 'var(--grey)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-              {product.soldOut
-                ? 'This product is currently unavailable. Check back for restocks.'
-                : 'Orders will open shortly. Check back soon.'}
-            </p>
+          <IngredientsModal 
+            ingredients={product.ingredients}
+            weight={product.weight}
+            calories={product.calories}
+            allergens={product.allergens}
+          />
+
+          <div style={{ marginTop: '3rem' }}>
+            <AddToCartForm product={{
+              id: product.id,
+              name: product.name,
+              price: Number(product.price),
+              sold_out: product.sold_out
+            }} />
           </div>
 
         </div>
       </div>
 
-      {/* Global CSS for the back link - temporary fix since it's client side */}
       <style>{`
         @media (max-width: 768px) {
           div[style*="gridTemplateColumns: '1fr 1fr'"] {
