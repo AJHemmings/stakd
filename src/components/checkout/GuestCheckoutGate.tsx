@@ -44,13 +44,10 @@ export function GuestCheckoutGate() {
         throw new Error(session.error);
       }
 
-      const stripe = await stripePromise;
-      const { error } = await stripe!.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (error) {
-        throw error;
+      if (session.url) {
+        window.location.href = session.url;
+      } else {
+        throw new Error("Failed to create checkout session URL");
       }
     } catch (err: any) {
       console.error("Checkout error:", err);
