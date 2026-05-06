@@ -76,7 +76,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               textAlign: 'center', padding: '1rem', fontSize: '0.8rem',
               fontFamily: 'var(--font-mono)', fontWeight: 900, lineHeight: '1.2',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
               zIndex: 3, transform: 'rotate(-5deg)',
               border: '3px solid var(--black)',
               boxShadow: '0 10px 0 rgba(0,0,0,0.2), 0 20px 40px rgba(0,0,0,0.5)'
