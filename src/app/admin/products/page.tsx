@@ -145,7 +145,7 @@ export default function AdminProductsPage() {
             setEditingId(null);
             setFormData({
               name: '', slug: '', category_id: '', price: '', description: '', image_url: '',
-              limited_time: false, sold_out: false, badge_text: '',
+              limited_time: false, sold_out: false, best_consumed_chilled: false, badge_text: '',
               ingredients: '', weight: '', calories: '', allergens: []
             });
             setShowForm(true);
