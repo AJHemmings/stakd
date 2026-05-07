@@ -36,6 +36,15 @@ export async function Navbar() {
             {user ? "Account" : "Log In"}
           </Link>
         </li>
+        <li>
+          <Link href="/faq" style={{
+            color: 'var(--cream-dark)',
+            fontSize: '0.85rem', letterSpacing: '0.08em',
+            textTransform: 'uppercase', fontWeight: 600
+          }}>
+            FAQ
+          </Link>
+        </li>
         {user?.user_metadata?.role === 'admin' && (
           <li>
             <Link href="/admin" style={{
