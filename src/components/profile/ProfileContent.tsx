@@ -417,7 +417,7 @@ export function ProfileContent({ user, initialOrders }: { user: { email: string 
         />
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '4rem', alignItems: 'start' }}>
+      <div className="profile-layout">
         {/* Left: Account + Support */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
