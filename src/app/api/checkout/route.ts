@@ -141,12 +141,40 @@ export async function POST(req: Request) {
       }
     }
 
-    const shippingAmount = freeDelivery ? 0 : onePoundDelivery ? 100 : 399;
-    const shippingLabel = freeDelivery
-      ? 'Free Delivery'
-      : onePoundDelivery
-        ? '£1 Delivery'
-        : 'Standard Shipping';
+    // Determine shipping cost — voucher/reward overrides take precedence over tier logic
+    let shippingAmount = 399;
+    let shippingLabel = 'Standard Shipping';
+
+    if (freeDelivery) {
+      shippingAmount = 0;
+      shippingLabel = 'Free Delivery';
+    } else if (onePoundDelivery) {
+      shippingAmount = 100;
+      shippingLabel = '£1 Delivery';
+    } else {
+      const totalItems: number = items.reduce((sum: number, i: any) => sum + i.quantity, 0);
+      const cartSubtotalGbp = cartSubtotalPence / 100;
+
+      const [tiersResult, settingResult] = await Promise.all([
+        supabase.from('shipping_tiers').select('*').eq('is_active', true).order('sort_order'),
+        supabase.from('store_settings').select('value').eq('key', 'free_delivery_threshold_gbp').single(),
+      ]);
+
+      const freeThreshold = parseFloat(settingResult.data?.value ?? '45');
+
+      if (cartSubtotalGbp >= freeThreshold) {
+        shippingAmount = 0;
+        shippingLabel = 'Free Delivery';
+      } else {
+        const tier = (tiersResult.data ?? []).find((t: any) =>
+          totalItems >= t.min_items && (t.max_items === null || totalItems <= t.max_items)
+        );
+        if (tier) {
+          shippingAmount = tier.price_pence;
+          shippingLabel = tier.label;
+        }
+      }
+    }
 
     const shippingOptions: any[] = [{
       shipping_rate_data: {

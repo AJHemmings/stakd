@@ -29,6 +29,14 @@ interface Product {
   name: string;
 }
 
+interface ShippingTier {
+  id: string;
+  min_items: number;
+  max_items: number | null;
+  price_pence: number;
+  label: string;
+}
+
 const REWARD_TYPE_LABELS: Record<string, string> = {
   free_delivery: 'Free Delivery',
   percent_10: '10% Off',
@@ -52,8 +60,11 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
   const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [freeProductId, setFreeProductId] = useState('');
+  const [shippingTiers, setShippingTiers] = useState<ShippingTier[]>([]);
+  const [freeThreshold, setFreeThreshold] = useState(45);
 
   const cartSubtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -63,6 +74,9 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
     fetch('/api/rewards')
       .then(r => r.ok ? r.json() : null)
       .then(d => setRewardsData(d));
+    fetch('/api/shipping/tiers')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) { setShippingTiers(d.tiers); setFreeThreshold(d.freeThresholdGbp); } });
     const supabase = createClient();
     supabase.from('products').select('id, name').order('name').then(({ data }) => {
       if (data) setProducts(data);
@@ -169,11 +183,15 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
   const selectedReward = rewardsData?.availableRewards.find(r => r.id === selectedRewardId);
 
   // Calculate display totals
+  const baseShipping = cartSubtotal >= freeThreshold
+    ? 0
+    : (shippingTiers.find(t => totalItems >= t.min_items && (t.max_items === null || totalItems <= t.max_items))?.price_pence ?? 399) / 100;
+
   const shippingCost =
     appliedVoucher?.deliveryType === 'free_delivery' ? 0
     : appliedVoucher?.deliveryType === 'one_pound_delivery' ? 1
     : selectedReward?.reward_tiers.reward_type === 'free_delivery' ? 0
-    : 3.99;
+    : baseShipping;
   const discountAmount = appliedVoucher ? appliedVoucher.discountAmount
     : selectedReward?.reward_tiers.reward_type === 'percent_10' ? cartSubtotal * 0.1
     : selectedReward?.reward_tiers.reward_type === 'percent_20' ? cartSubtotal * 0.2
@@ -313,8 +331,15 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
             <span style={{ color: 'var(--grey)', fontSize: '0.9rem' }}>Subtotal</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}>£{cartSubtotal.toFixed(2)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ color: 'var(--grey)', fontSize: '0.9rem' }}>Shipping</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span style={{ color: 'var(--grey)', fontSize: '0.9rem' }}>Shipping</span>
+              {shippingCost > 0 && cartSubtotal < freeThreshold && (
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--choc-mid)', marginTop: '0.15rem' }}>
+                  Free over £{freeThreshold}
+                </p>
+              )}
+            </div>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}>
               {shippingCost === 0 ? <span style={{ color: '#2e7d32' }}>Free</span> : `£${shippingCost.toFixed(2)}`}
             </span>
