@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '../../../../utils/supabase/server';
+import { createAdminClient } from '../../../../utils/supabase/admin';
 import { headers } from 'next/headers';
 import { syncOrderToSheets } from '../../../../utils/google-sheets';
 
@@ -37,13 +37,21 @@ export async function POST(req: Request) {
     const customerName = session.customer_details?.name;
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
     const stripeSessionId = session.id;
-    const shippingAddress = (session as any).shipping_details?.address;
+    const sessionAny = session as any;
+    console.log('[webhook] shipping_details:', JSON.stringify(session.shipping_details));
+    console.log('[webhook] collected_information:', JSON.stringify(sessionAny.collected_information));
+    console.log('[webhook] session keys:', Object.keys(sessionAny).join(', '));
+
+    const shippingAddress =
+      session.shipping_details?.address ??
+      sessionAny.collected_information?.shipping_details?.address ??
+      null;
     
     // Get cart data from metadata
     const cartDataRaw = session.metadata?.cart_data;
     const cartItems = cartDataRaw ? JSON.parse(cartDataRaw) : [];
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // 1. Insert order
     const { data: order, error: orderError } = await supabase

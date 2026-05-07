@@ -183,3 +183,15 @@ a {
 .gap-4 { gap: 1rem; }
 .gap-8 { gap: 2rem; }
 .w-full { width: 100%; }
+
+@keyframes cart-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.cart-bump {
+  display: inline-block;
+  animation: cart-bump 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '../../components/ui/Button';
 import { useCartStore } from '../../store/cart';
-import { createClient } from '../../utils/supabase/client';
 
 function SuccessContent() {
   const { clearCart } = useCartStore();
@@ -20,16 +19,8 @@ function SuccessContent() {
 
     if (sessionId) {
       const fetchOrder = async () => {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*, order_items(*)')
-          .eq('stripe_session_id', sessionId)
-          .single();
-
-        if (!error && data) {
-          setOrder(data);
-        }
+        const res = await fetch(`/api/orders/confirmation?session_id=${encodeURIComponent(sessionId)}`);
+        if (res.ok) setOrder(await res.json());
         setLoading(false);
       };
       fetchOrder();

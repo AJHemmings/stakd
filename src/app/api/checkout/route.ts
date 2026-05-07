@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { items } = await req.json();
+    const { items, userEmail } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
+      ...(userEmail ? { customer_email: userEmail } : {}),
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/cart`,
       shipping_address_collection: {

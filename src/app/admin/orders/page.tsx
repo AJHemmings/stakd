@@ -2,16 +2,24 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/Button';
-import { createClient } from '../../../utils/supabase/client';
 
-// Mock types
 type OrderStatus = 'RECEIVED' | 'PREPARING' | 'BAKED' | 'OUT_FOR_DELIVERY' | 'DELIVERED';
+
+interface RawAddress {
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+}
 
 interface Order {
   id: string;
   customer: string;
   email: string;
   address: string;
+  rawAddress: RawAddress | null;
   date: string;
   items: { name: string; quantity: number; base: string; price: number }[];
   total: number;
@@ -21,29 +29,13 @@ interface Order {
   batchId?: string | null;
 }
 
-const MOCK_ORDERS: Order[] = [
-  { 
-    id: '#1042', customer: 'Alex Johnson', email: 'alex@example.com', 
-    address: '123 Baker Street, London, NW1 6XE',
-    date: 'Today, 10:42 AM', 
-    items: [{ name: 'Plain Cookie Dough', quantity: 2, base: 'Dark Chocolate', price: 6.99 }], 
-    total: 13.98, paymentStatus: 'PAID', status: 'RECEIVED' 
-  },
-  { 
-    id: '#1041', customer: 'Sam Smith', email: 'sam@example.com', 
-    address: '45 Oxford Road, Manchester, M1 4PB',
-    date: 'Yesterday, 14:30 PM', 
-    items: [{ name: 'Rich Fudge Brownie', quantity: 1, base: 'Milk Chocolate', price: 7.49 }], 
-    total: 7.49, paymentStatus: 'PENDING', status: 'PREPARING' 
-  },
-  { 
-    id: '#1040', customer: 'Emma Watson', email: 'emma@example.com', 
-    address: '89 High Street, Edinburgh, EH1 1TH',
-    date: '2026-04-19', 
-    items: [{ name: 'Pistachio Cookie Dough', quantity: 3, base: 'White Chocolate', price: 8.49 }], 
-    total: 25.47, paymentStatus: 'PAID', status: 'OUT_FOR_DELIVERY' 
-  },
-];
+function formatAddress(addr: RawAddress | null): string {
+  if (!addr) return 'No address';
+  return [addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country]
+    .filter(Boolean)
+    .join('\n');
+}
+
 
 const ALL_STATUSES: { value: OrderStatus; label: string; color: string; bg: string }[] = [
   { value: 'RECEIVED', label: 'Order Received', color: '#e65100', bg: '#fff3e0' },
@@ -63,31 +55,24 @@ export default function AdminOrdersPage() {
   const [printView, setPrintView] = useState<'SELECT' | 'PREP' | 'LABELS'>('SELECT');
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
-  const supabase = createClient();
-
   useEffect(() => {
     fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*, items:order_items(*)')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching orders:', error);
+    const res = await fetch('/api/admin/orders');
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('Error fetching orders:', data.error);
     } else {
-      // Map Supabase data to our Order type
       const mappedOrders: Order[] = data.map((o: any) => ({
-        id: o.id.substring(0, 8).toUpperCase(), // Shorten UUID for display
+        id: o.id.substring(0, 8).toUpperCase(),
         realId: o.id,
         customer: o.customer_name,
         email: o.customer_email,
-        address: o.shipping_address ? 
-          `${o.shipping_address.line1 || ''}, ${o.shipping_address.city || ''}, ${o.shipping_address.postal_code || ''}` : 
-          'No address',
+        address: formatAddress(o.shipping_address),
+        rawAddress: o.shipping_address ?? null,
         date: new Date(o.created_at).toLocaleString('en-GB'),
         items: o.items.map((i: any) => ({
           name: i.product_name,
@@ -128,22 +113,21 @@ export default function AdminOrdersPage() {
 
   const handleStatusSave = async () => {
     if (!selectedOrder || !pendingStatus) return;
-    
-    // Find the real UUID
     const realOrder = orders.find(o => o.id === selectedOrder.id);
     if (!realOrder) return;
 
-    const { error } = await supabase
-      .from('orders')
-      .update({ fulfillment_status: pendingStatus })
-      .eq('id', (realOrder as any).realId);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [(realOrder as any).realId], updates: { fulfillment_status: pendingStatus } }),
+    });
 
-    if (error) {
-      alert(`Error updating status: ${error.message}`);
+    if (!res.ok) {
+      const { error } = await res.json();
+      alert(`Error updating status: ${error}`);
     } else {
       setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: pendingStatus } : o));
-      setSelectedOrder({ ...selectedOrder, status: pendingStatus });
-      alert(`Order ${selectedOrder.id} status saved as ${pendingStatus}.`);
+      setSelectedOrder(null);
     }
   };
 
@@ -167,13 +151,15 @@ export default function AdminOrdersPage() {
 
     const newBatchId = `batch-${Date.now()}`;
 
-    const { error } = await supabase
-      .from('orders')
-      .update({ fulfillment_status: 'PREPARING', batch_id: newBatchId })
-      .in('id', selectedRealIds);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: selectedRealIds, updates: { fulfillment_status: 'PREPARING', batch_id: newBatchId } }),
+    });
 
-    if (error) {
-      alert(`Error updating batch status: ${error.message}`);
+    if (!res.ok) {
+      const { error } = await res.json();
+      alert(`Error updating batch status: ${error}`);
     } else {
       setOrders(prev => prev.map(o => selectedOrderIds.includes(o.id) ? { ...o, status: 'PREPARING', batchId: newBatchId } : o));
       setShowPrintSummary(false);
@@ -183,14 +169,16 @@ export default function AdminOrdersPage() {
 
   const handleEscalateBatch = async (batchId: string) => {
     if (!confirm('Are you sure you want to escalate this batch to SHIPPED?')) return;
-    
-    const { error } = await supabase
-      .from('orders')
-      .update({ fulfillment_status: 'OUT_FOR_DELIVERY' })
-      .eq('batch_id', batchId);
 
-    if (error) {
-      alert(`Error escalating batch: ${error.message}`);
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ batchId, updates: { fulfillment_status: 'OUT_FOR_DELIVERY' } }),
+    });
+
+    if (!res.ok) {
+      const { error } = await res.json();
+      alert(`Error escalating batch: ${error}`);
     } else {
       setOrders(prev => prev.map(o => o.batchId === batchId ? { ...o, status: 'OUT_FOR_DELIVERY' } : o));
       alert(`Batch ${batchId} escalated to SHIPPED (OUT_FOR_DELIVERY).`);
@@ -202,32 +190,22 @@ export default function AdminOrdersPage() {
     let csvContent = "data:text/csv;charset=utf-8,";
     
     if (provider === 'ROYAL_MAIL') {
-      csvContent += "Name,Address 1,City,Postcode,Email,Weight,Service\\n";
+      csvContent += "Name,Address 1,Address 2,City,Postcode,Country,Email,Weight,Service\\n";
       batchOrders.forEach(o => {
-        // Simple heuristic for address splitting (in a real app, you'd use parsed fields)
-        const parts = o.address.split(',').map(p => p.trim());
-        const address1 = parts[0] || '';
-        const city = parts[1] || '';
-        const postcode = parts[2] || '';
-        csvContent += `"${o.customer}","${address1}","${city}","${postcode}","${o.email}","500","Tracked 48"\\n`;
+        const a = o.rawAddress;
+        csvContent += `"${o.customer}","${a?.line1 || ''}","${a?.line2 || ''}","${a?.city || ''}","${a?.postal_code || ''}","${a?.country || 'GB'}","${o.email}","500","Tracked 48"\\n`;
       });
     } else if (provider === 'HERMES') {
-      csvContent += "Customer Name,Address Line 1,Town,Postcode,Email,Phone,Weight (kg)\\n";
+      csvContent += "Customer Name,Address Line 1,Address Line 2,Town,Postcode,Country,Email,Phone,Weight (kg)\\n";
       batchOrders.forEach(o => {
-        const parts = o.address.split(',').map(p => p.trim());
-        const address1 = parts[0] || '';
-        const city = parts[1] || '';
-        const postcode = parts[2] || '';
-        csvContent += `"${o.customer}","${address1}","${city}","${postcode}","${o.email}","00000000000","0.5"\\n`;
+        const a = o.rawAddress;
+        csvContent += `"${o.customer}","${a?.line1 || ''}","${a?.line2 || ''}","${a?.city || ''}","${a?.postal_code || ''}","${a?.country || 'GB'}","${o.email}","","0.5"\\n`;
       });
     } else if (provider === 'YODEL') {
-      csvContent += "Name,Address1,Town,Postcode,Email,Weight\\n";
+      csvContent += "Name,Address1,Address2,Town,Postcode,Country,Email,Weight\\n";
       batchOrders.forEach(o => {
-        const parts = o.address.split(',').map(p => p.trim());
-        const address1 = parts[0] || '';
-        const city = parts[1] || '';
-        const postcode = parts[2] || '';
-        csvContent += `"${o.customer}","${address1}","${city}","${postcode}","${o.email}","0.5"\\n`;
+        const a = o.rawAddress;
+        csvContent += `"${o.customer}","${a?.line1 || ''}","${a?.line2 || ''}","${a?.city || ''}","${a?.postal_code || ''}","${a?.country || 'GB'}","${o.email}","0.5"\\n`;
       });
     }
 
@@ -408,7 +386,7 @@ export default function AdminOrdersPage() {
               <p style={{ color: 'var(--grey)', fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}>{selectedOrder.email}</p>
               <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--cream)', borderRadius: '2px', borderLeft: '2px solid var(--gold)' }}>
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)', marginBottom: '0.2rem' }}>SHIPPING ADDRESS</p>
-                <p style={{ fontSize: '0.95rem', lineHeight: 1.4 }}>{selectedOrder.address}</p>
+                <p style={{ fontSize: '0.95rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{selectedOrder.address}</p>
               </div>
             </div>
 

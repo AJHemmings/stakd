@@ -1,8 +1,8 @@
 import React from 'react';
-import { createClient } from '../../utils/supabase/server';
+import { createAdminClient } from '../../utils/supabase/admin';
 
 export default async function AdminDashboard() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: dbOrders } = await supabase
     .from('orders')
@@ -14,11 +14,7 @@ export default async function AdminDashboard() {
   const totalSales = orders.reduce((acc, o) => acc + Number(o.total_amount), 0) || 0;
   const totalOrders = orders.length || 0;
 
-  // Simple aggregation for top product if we have many orders
-  // For now, let's just keep a placeholder or do a quick check if possible
-  // In a real app, we'd query order_items and count by product_name
-
-  const recentOrders = orders.slice(0, 5) || [];
+  const recentOrders = orders.slice(0, 5);
 
   return (
     <div>
@@ -26,7 +22,7 @@ export default async function AdminDashboard() {
       <p style={{ color: 'var(--grey)', marginBottom: '3rem', fontFamily: 'var(--font-mono)' }}>Overview of STAK'D performance.</p>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
         <div className="card" style={{ padding: '2rem' }}>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)', marginBottom: '0.5rem' }}>TOTAL SALES</p>
           <p style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--choc-mid)' }}>£{totalSales.toFixed(2)}</p>
@@ -34,10 +30,6 @@ export default async function AdminDashboard() {
         <div className="card" style={{ padding: '2rem' }}>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)', marginBottom: '0.5rem' }}>ORDERS</p>
           <p style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--choc-mid)' }}>{totalOrders}</p>
-        </div>
-        <div className="card" style={{ padding: '2rem' }}>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)', marginBottom: '0.5rem' }}>TOP PRODUCT</p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--choc-mid)', marginTop: '0.5rem' }}>Pistachio Cookie Dough</p>
         </div>
       </div>
 
