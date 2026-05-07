@@ -150,7 +150,7 @@ export default function AdminVouchersPage() {
       <div style={{ background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', padding: '2rem', marginBottom: '3rem' }}>
         <h2 style={{ fontSize: '1.3rem', marginBottom: '1.5rem' }}>Create New Code</h2>
         <form onSubmit={handleCreate}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div className="admin-form-grid-3" style={{ marginBottom: '1rem' }}>
             <div>
               <label style={LABEL}>Code</label>
               <input style={INPUT} value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))} placeholder="SUMMER20" />
@@ -165,7 +165,7 @@ export default function AdminVouchersPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isDeliveryType ? '1fr 1fr 1fr' : '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className={isDeliveryType ? "admin-form-grid-3" : "admin-form-grid-4"} style={{ marginBottom: '1.5rem' }}>
             <div>
               <label style={LABEL}>Type</label>
               <select
@@ -226,6 +226,7 @@ export default function AdminVouchersPage() {
         <p style={{ color: 'var(--grey)' }}>No voucher codes yet.</p>
       ) : (
         <div style={{ background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', overflow: 'hidden' }}>
+          <div className="admin-table-wrap">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--cream)', borderBottom: '1px solid var(--cream-dark)' }}>
@@ -278,6 +279,7 @@ export default function AdminVouchersPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

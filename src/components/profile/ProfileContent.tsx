@@ -136,7 +136,7 @@ function LoyaltyCardModal({ data, onClose }: { data: RewardsData; onClose: () =>
                 .filter(t => t.is_active && t.order_milestone > orderCount)
                 .slice(0, 3)
                 .map(t => (
-                  <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: 'var(--cream)', borderRadius: '3px' }}>
+                  <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.3rem', padding: '0.5rem 0.75rem', background: 'var(--cream)', borderRadius: '3px' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.name}</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--grey)' }}>
                       at {t.order_milestone} orders{t.reward_type ? ` — ${REWARD_TYPE_LABELS[t.reward_type]}` : ''}

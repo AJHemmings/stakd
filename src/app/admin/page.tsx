@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
       <p style={{ color: 'var(--grey)', marginBottom: '3rem', fontFamily: 'var(--font-mono)' }}>Overview of STAK'D performance.</p>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', marginBottom: '4rem' }}>
+      <div className="admin-kpi-grid" style={{ marginBottom: '4rem' }}>
         <div className="card" style={{ padding: '2rem' }}>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)', marginBottom: '0.5rem' }}>TOTAL SALES</p>
           <p style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--choc-mid)' }}>£{totalSales.toFixed(2)}</p>
@@ -33,10 +33,11 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+      <div className="admin-dash-grid">
         {/* Recent Orders Table */}
         <div className="card" style={{ padding: '2rem' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Orders</h2>
+          <div className="admin-table-wrap">
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--cream-dark)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)' }}>
@@ -72,6 +73,7 @@ export default async function AdminDashboard() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Quick Actions */}

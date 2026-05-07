@@ -157,6 +157,7 @@ export default function AdminSupportPage() {
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="admin-table-wrap">
         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'var(--white)', borderBottom: '2px solid var(--cream-dark)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)' }}>
@@ -190,6 +191,7 @@ export default function AdminSupportPage() {
             ))}
           </tbody>
         </table>
+        </div>
         {loading && <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--grey)' }}>Loading...</div>}
         {!loading && filtered.length === 0 && <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--grey)' }}>No tickets found.</div>}
       </div>

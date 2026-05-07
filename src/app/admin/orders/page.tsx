@@ -305,6 +305,7 @@ export default function AdminOrdersPage() {
             )}
           </div>
         ) : (
+          <div className="admin-table-wrap">
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--white)', borderBottom: '2px solid var(--cream-dark)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)' }}>
@@ -344,8 +345,9 @@ export default function AdminOrdersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
-        
+
         {loading ? (
           <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--grey)' }}>
             Loading orders...

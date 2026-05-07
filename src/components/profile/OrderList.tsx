@@ -63,7 +63,7 @@ function OrderRow({ order, onTicketCreated }: { order: Order; onTicketCreated: (
           padding: '1.2rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
         }}
       >
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+        <div className="order-row-left" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)' }}>#{ref}</span>
           <span style={{ fontSize: '0.95rem' }}>{date}</span>
         </div>

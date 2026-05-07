@@ -196,7 +196,7 @@ export default function AdminRewardsPage() {
               {/* Inline edit form */}
               {isEditing && (
                 <div style={{ padding: '1.5rem', background: 'var(--cream)', borderTop: '1px solid var(--cream-dark)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="admin-form-grid-2" style={{ marginBottom: '1rem' }}>
                     <div>
                       <label style={LABEL}>Label</label>
                       <input

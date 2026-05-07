@@ -52,7 +52,7 @@ export default function AdminLoyaltyPage() {
       </p>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
+      <div className="admin-3col-grid" style={{ marginBottom: '2.5rem' }}>
         {[
           { label: 'Customers', value: customers.length },
           { label: 'Milestones Earned', value: totalEarned },

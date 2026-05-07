@@ -206,7 +206,7 @@ export default function AdminShippingPage() {
 
               {editingId === tier.id && (
                 <div style={{ padding: '1.25rem', background: 'var(--cream)', borderTop: '1px solid var(--cream-dark)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="admin-form-grid-4" style={{ marginBottom: '1rem' }}>
                     <div>
                       <label style={LABEL}>Label</label>
                       <input style={INPUT} value={editForm.label} onChange={e => setEditForm(f => ({ ...f, label: e.target.value }))} />
@@ -239,7 +239,7 @@ export default function AdminShippingPage() {
       <div style={{ background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', padding: '1.5rem' }}>
         <h2 style={{ fontSize: '1.1rem', marginBottom: '1.25rem' }}>Add Band</h2>
         <form onSubmit={addTier}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div className="admin-form-grid-4" style={{ marginBottom: '1rem' }}>
             <div>
               <label style={LABEL}>Label</label>
               <input style={INPUT} value={addForm.label} onChange={e => setAddForm(f => ({ ...f, label: e.target.value }))} placeholder="Standard (1 item)" />

@@ -144,7 +144,7 @@ export default function InsightsPage() {
       ) : (
         <>
           {/* Top KPI row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+          <div className="admin-4col-grid" style={{ marginBottom: '3rem' }}>
             <InsightCard label="Total Revenue" value={`£${data.totalRevenue.toFixed(2)}`} />
             <InsightCard label="Total Orders" value={String(data.totalOrders)} />
             <InsightCard label="Avg Order Value" value={`£${data.avgOrderValue.toFixed(2)}`} />
@@ -153,8 +153,8 @@ export default function InsightsPage() {
 
           {/* Bar chart */}
           <div className="card" style={{ padding: '2rem', marginBottom: '3rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.4rem' }}>Revenue — {PERIOD_LABELS[period]}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 style={{ fontSize: '1.4rem' }}>Revenue</h2>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {(['daily', 'weekly', 'monthly', 'yearly'] as Period[]).map(p => (
                   <button
@@ -182,7 +182,7 @@ export default function InsightsPage() {
 
           {/* Product insights */}
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Product Performance</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+          <div className="admin-3col-grid" style={{ marginBottom: '3rem' }}>
             <InsightCard
               label="Top by Volume"
               value={top?.name ?? 'No data'}
@@ -204,6 +204,7 @@ export default function InsightsPage() {
           {data.products.length > 0 && (
             <div className="card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem' }}>All Products</h2>
+              <div className="admin-table-wrap">
               <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--cream-dark)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--grey)' }}>
@@ -224,6 +225,7 @@ export default function InsightsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>
