@@ -183,8 +183,8 @@ export async function POST(req: Request) {
         display_name: shippingLabel,
         ...(shippingAmount > 0 ? {
           delivery_estimate: {
-            minimum: { unit: 'business_day', value: 3 },
-            maximum: { unit: 'business_day', value: 5 },
+            minimum: { unit: 'business_day', value: 1 },
+            maximum: { unit: 'business_day', value: 1 },
           },
         } : {}),
       },

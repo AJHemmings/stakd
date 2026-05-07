@@ -23,9 +23,9 @@ const SECTIONS: FAQSection[] = [
           <>
             Shipping is calculated by how many bars you order:
             <ul style={{ marginTop: '0.75rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <li>1 bar — £3.99</li>
-              <li>2–3 bars — £5.49</li>
-              <li>4+ bars — £7.49</li>
+              <li>1 bar — £5.99</li>
+              <li>2–3 bars — £7.99</li>
+              <li>4+ bars — £9.99</li>
               <li style={{ fontWeight: 600 }}>Orders over £45 — Free delivery</li>
             </ul>
           </>
@@ -33,7 +33,7 @@ const SECTIONS: FAQSection[] = [
       },
       {
         q: 'How long does delivery take?',
-        a: 'We ship via Royal Mail Tracked. You can expect your order to arrive within 3–5 working days of placing it. You\'ll receive an email confirmation once your order is on its way.',
+        a: 'We ship via Royal Mail Special Delivery. Orders placed before 3pm on a working day are dispatched the same day and arrive the next working day. You\'ll receive an email confirmation with tracking details once your order is on its way.',
       },
       {
         q: 'Do you ship outside the UK?',
@@ -41,11 +41,11 @@ const SECTIONS: FAQSection[] = [
       },
       {
         q: 'Can I track my order?',
-        a: 'Yes. Once your order has been dispatched you\'ll receive a confirmation email. Royal Mail Tracked shipments include a tracking reference so you can follow your parcel.',
+        a: 'Yes. Once your order has been dispatched you\'ll receive a confirmation email. Royal Mail Special Delivery shipments include a tracking reference and signature-on-delivery, so you can follow your parcel every step of the way.',
       },
       {
         q: 'Will my order fit through the letterbox?',
-        a: 'Probably not. Our bars are thick by design — that\'s the point. Most orders will be delivered as a small parcel, so make sure someone is in or that you have a safe place for the delivery driver to leave it.',
+        a: 'No. Royal Mail Special Delivery requires a signature, so someone will need to be in to receive it. If no one is home, Royal Mail will leave a card and hold it at your local depot for collection.',
       },
     ],
   },
