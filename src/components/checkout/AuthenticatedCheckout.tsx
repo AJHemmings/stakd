@@ -77,7 +77,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
     const res = await fetch('/api/vouchers/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: voucherInput.trim(), cartTotal: cartSubtotal }),
+      body: JSON.stringify({ code: voucherInput.trim(), cartTotal: cartSubtotal, customerEmail: user.email }),
     });
     setValidatingVoucher(false);
     if (!res.ok) {

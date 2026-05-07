@@ -36,6 +36,7 @@ interface Voucher {
   expires_at: string | null;
   max_uses: number | null;
   uses_count: number;
+  one_per_customer: boolean;
   is_active: boolean;
   created_at: string;
 }
@@ -69,6 +70,7 @@ const emptyForm = {
   discount_value: '',
   expires_at: '',
   max_uses: '',
+  one_per_customer: false,
 };
 
 const DELIVERY_TYPES: DiscountType[] = ['free_delivery', 'one_pound_delivery'];
@@ -201,6 +203,15 @@ export default function AdminVouchersPage() {
             </div>
           </div>
 
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+            <input
+              type="checkbox"
+              checked={form.one_per_customer}
+              onChange={e => setForm(f => ({ ...f, one_per_customer: e.target.checked }))}
+            />
+            One use per customer (each email can only redeem this code once)
+          </label>
+
           {error && <p style={{ color: 'red', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '1rem' }}>{error}</p>}
           <button type="submit" disabled={saving} className="btn btn-primary" style={{ opacity: saving ? 0.6 : 1 }}>
             {saving ? 'Creating...' : 'Create Voucher'}
@@ -240,6 +251,9 @@ export default function AdminVouchersPage() {
                     </td>
                     <td style={{ padding: '0.9rem 1rem', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--grey)' }}>
                       {v.uses_count}{v.max_uses ? ` / ${v.max_uses}` : ''}
+                      {v.one_per_customer && (
+                        <span style={{ display: 'block', fontSize: '0.68rem', color: 'var(--choc-mid)', marginTop: '0.15rem' }}>1 per customer</span>
+                      )}
                     </td>
                     <td style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', color: 'var(--grey)' }}>
                       {v.expires_at ? new Date(v.expires_at).toLocaleDateString('en-GB') : '—'}

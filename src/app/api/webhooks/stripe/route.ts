@@ -142,7 +142,7 @@ export async function POST(req: Request) {
       if (voucherCode) {
         const { data: vc } = await supabase
           .from('voucher_codes')
-          .select('uses_count')
+          .select('id, uses_count, one_per_customer')
           .eq('code', voucherCode)
           .single();
         if (vc) {
@@ -150,6 +150,11 @@ export async function POST(req: Request) {
             .from('voucher_codes')
             .update({ uses_count: vc.uses_count + 1 })
             .eq('code', voucherCode);
+          if (vc.one_per_customer) {
+            await supabase
+              .from('voucher_redemptions')
+              .insert({ voucher_code_id: vc.id, customer_email: customerEmail });
+          }
         }
       }
 

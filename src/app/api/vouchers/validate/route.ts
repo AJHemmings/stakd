@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../utils/supabase/admin';
 
 export async function POST(req: NextRequest) {
-  const { code, cartTotal } = await req.json();
+  const { code, cartTotal, customerEmail } = await req.json();
   if (!code) return NextResponse.json({ error: 'No code provided' }, { status: 400 });
 
   const supabase = createAdminClient();
@@ -20,6 +20,17 @@ export async function POST(req: NextRequest) {
   }
   if (data.max_uses !== null && data.uses_count >= data.max_uses) {
     return NextResponse.json({ error: 'This code has reached its usage limit' }, { status: 400 });
+  }
+  if (data.one_per_customer && customerEmail) {
+    const { data: prior } = await supabase
+      .from('voucher_redemptions')
+      .select('id')
+      .eq('voucher_code_id', data.id)
+      .eq('customer_email', customerEmail)
+      .maybeSingle();
+    if (prior) {
+      return NextResponse.json({ error: 'You have already used this code' }, { status: 400 });
+    }
   }
 
   const isDeliveryType = data.discount_type === 'free_delivery' || data.discount_type === 'one_pound_delivery';
