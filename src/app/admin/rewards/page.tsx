@@ -64,13 +64,23 @@ export default function AdminRewardsPage() {
   const [error, setError] = useState('');
 
   const load = async () => {
-    const supabase = createClient();
-    const [tiersRes, { data: productsData }] = await Promise.all([
-      fetch('/api/admin/reward-tiers'),
-      supabase.from('products').select('id, name').order('name'),
-    ]);
-    if (tiersRes.ok) setTiers(await tiersRes.json());
-    if (productsData) setProducts(productsData);
+    try {
+      const tiersRes = await fetch('/api/admin/reward-tiers');
+      if (tiersRes.ok) {
+        const data = await tiersRes.json();
+        setTiers(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error('Failed to load reward tiers:', e);
+    }
+
+    try {
+      const supabase = createClient();
+      const { data: productsData } = await supabase.from('products').select('id, name').order('name');
+      if (productsData) setProducts(productsData);
+    } catch (e) {
+      console.error('Failed to load products:', e);
+    }
   };
 
   useEffect(() => { load(); }, []);
