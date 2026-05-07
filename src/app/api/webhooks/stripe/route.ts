@@ -45,6 +45,7 @@ export async function POST(req: Request) {
     const cartItems = cartDataRaw ? JSON.parse(cartDataRaw) : [];
     const voucherCode = session.metadata?.voucher_code;
     const rewardId = session.metadata?.reward_id;
+    const freeProductId = session.metadata?.free_product_id;
 
     const supabase = createAdminClient();
 
@@ -79,6 +80,24 @@ export async function POST(req: Request) {
       }));
       const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
       if (itemsError) console.error('Error inserting order items:', itemsError);
+    }
+
+    // 2b. Insert free reward product (customer-chosen, £0)
+    if (freeProductId) {
+      const { data: freeProduct } = await supabase
+        .from('products')
+        .select('name')
+        .eq('id', freeProductId)
+        .single();
+      if (freeProduct) {
+        await supabase.from('order_items').insert({
+          order_id: order.id,
+          product_name: freeProduct.name,
+          base_name: 'Free Reward',
+          quantity: 1,
+          unit_price: 0,
+        });
+      }
     }
 
     // 3. Check loyalty milestones (every 5 orders = reward)

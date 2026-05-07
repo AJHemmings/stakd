@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { items, userEmail, voucherCode, rewardId } = await req.json();
+    const { items, userEmail, voucherCode, rewardId, freeProductId } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
@@ -111,11 +111,11 @@ export async function POST(req: Request) {
             quantity: 1,
           });
           discountLabel = '20% Off Reward';
-        } else if (tier.reward_type === 'free_item' && tier.free_item_product_id) {
+        } else if (tier.reward_type === 'free_item' && freeProductId) {
           const { data: product } = await supabase
             .from('products')
             .select('name')
-            .eq('id', tier.free_item_product_id)
+            .eq('id', freeProductId)
             .single();
           if (product) {
             lineItems.push({
@@ -127,6 +127,7 @@ export async function POST(req: Request) {
               quantity: 1,
             });
             discountLabel = `Free ${product.name}`;
+            metadata.free_product_id = freeProductId;
           }
         }
       }

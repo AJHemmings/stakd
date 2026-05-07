@@ -33,6 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/support" style={{ color: 'var(--cream-dark)' }}>Support</Link>
           <Link href="/admin/vouchers" style={{ color: 'var(--cream-dark)' }}>Vouchers</Link>
           <Link href="/admin/rewards" style={{ color: 'var(--cream-dark)' }}>Rewards</Link>
+          <Link href="/admin/loyalty" style={{ color: 'var(--cream-dark)' }}>Loyalty</Link>
         </nav>
         
         <div style={{ marginTop: 'auto' }}>

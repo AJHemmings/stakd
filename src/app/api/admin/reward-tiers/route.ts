@@ -6,7 +6,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from('reward_tiers')
     .select('*, products(id, name)')
-    .order('points_required');
+    .order('order_milestone');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     .insert({
       name: body.name,
       description: body.description || null,
-      points_required: body.points_required,
+      order_milestone: body.order_milestone,
       reward_type: body.reward_type,
       free_item_product_id: body.reward_type === 'free_item' ? (body.free_item_product_id || null) : null,
       sort_order: body.sort_order || 0,

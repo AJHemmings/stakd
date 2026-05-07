@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useCartStore } from '../../store/cart';
+import { createClient } from '../../utils/supabase/client';
 
 interface RewardTier {
   id: string;
   name: string;
   description: string | null;
-  points_required: number;
+  order_milestone: number;
   reward_type: string;
 }
 
@@ -21,6 +22,11 @@ interface RewardsData {
   orderCount: number;
   availableRewards: UserReward[];
   tiers: RewardTier[];
+}
+
+interface Product {
+  id: string;
+  name: string;
 }
 
 const REWARD_TYPE_LABELS: Record<string, string> = {
@@ -44,6 +50,8 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
 
   const [rewardsData, setRewardsData] = useState<RewardsData | null>(null);
   const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [freeProductId, setFreeProductId] = useState('');
 
   const cartSubtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
@@ -55,6 +63,10 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
     fetch('/api/rewards')
       .then(r => r.ok ? r.json() : null)
       .then(d => setRewardsData(d));
+    const supabase = createClient();
+    supabase.from('products').select('id, name').order('name').then(({ data }) => {
+      if (data) setProducts(data);
+    });
   }, []);
 
   const handleApplyVoucher = async () => {
@@ -87,6 +99,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
     setSelectedRewardId(null);
     setVoucherInput('');
     setVoucherError('');
+    setFreeProductId('');
   };
 
   const handleCheckout = async () => {
@@ -95,6 +108,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
       const body: any = { items, userEmail: user.email };
       if (appliedVoucher) body.voucherCode = appliedVoucher.code;
       if (selectedRewardId) body.rewardId = selectedRewardId;
+      if (freeProductId) body.freeProductId = freeProductId;
 
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -178,12 +192,34 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
           <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Apply Discount</h3>
 
           {(appliedVoucher || selectedRewardId) ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', background: '#e8f5e9', borderRadius: '3px' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#2e7d32', fontWeight: 700 }}>
-                {appliedVoucher ? `${appliedVoucher.code} — ${appliedVoucher.label}` : `${selectedReward?.reward_tiers.name} — ${REWARD_TYPE_LABELS[selectedReward?.reward_tiers.reward_type ?? '']}`}
-              </p>
-              <button onClick={clearDiscount} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c62828', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>Remove</button>
-            </div>
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.8rem 1rem', background: '#e8f5e9', borderRadius: '3px' }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#2e7d32', fontWeight: 700 }}>
+                  {appliedVoucher ? `${appliedVoucher.code} — ${appliedVoucher.label}` : `${selectedReward?.reward_tiers.name} — ${REWARD_TYPE_LABELS[selectedReward?.reward_tiers.reward_type ?? '']}`}
+                </p>
+                <button onClick={clearDiscount} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c62828', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>Remove</button>
+              </div>
+              {selectedReward?.reward_tiers.reward_type === 'free_item' && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--grey)', marginBottom: '0.4rem' }}>
+                    Choose your free product
+                  </p>
+                  <select
+                    value={freeProductId}
+                    onChange={e => setFreeProductId(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem 0.8rem', border: `1px solid ${!freeProductId ? 'var(--gold)' : 'var(--cream-dark)'}`, borderRadius: '3px', fontFamily: 'var(--font-outfit)', fontSize: '0.9rem', background: 'var(--white)', color: 'var(--dark)' }}
+                  >
+                    <option value="">Select a product...</option>
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                  {!freeProductId && (
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--choc-mid)', marginTop: '0.4rem' }}>
+                      Select a product to continue
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <>
               {/* Tabs */}
@@ -288,8 +324,9 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
 
         <button
           onClick={handleCheckout}
+          disabled={selectedReward?.reward_tiers.reward_type === 'free_item' && !freeProductId}
           className="btn btn-primary"
-          style={{ width: '100%', padding: '1rem', fontSize: '0.9rem' }}
+          style={{ width: '100%', padding: '1rem', fontSize: '0.9rem', opacity: selectedReward?.reward_tiers.reward_type === 'free_item' && !freeProductId ? 0.5 : 1 }}
         >
           Pay Now
         </button>

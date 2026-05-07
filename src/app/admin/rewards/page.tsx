@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { createClient } from '../../../utils/supabase/client';
 
 interface RewardTier {
   id: string;
@@ -12,11 +11,6 @@ interface RewardTier {
   free_item_product_id: string | null;
   is_active: boolean;
   products?: { id: string; name: string } | null;
-}
-
-interface Product {
-  id: string;
-  name: string;
 }
 
 const REWARD_TYPE_LABELS: Record<string, string> = {
@@ -51,7 +45,6 @@ const MILESTONES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 export default function AdminRewardsPage() {
   const [tiers, setTiers] = useState<RewardTier[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     name: '',
@@ -73,14 +66,6 @@ export default function AdminRewardsPage() {
     } catch (e) {
       console.error('Failed to load reward tiers:', e);
     }
-
-    try {
-      const supabase = createClient();
-      const { data: productsData } = await supabase.from('products').select('id, name').order('name');
-      if (productsData) setProducts(productsData);
-    } catch (e) {
-      console.error('Failed to load products:', e);
-    }
   };
 
   useEffect(() => { load(); }, []);
@@ -99,10 +84,6 @@ export default function AdminRewardsPage() {
 
   const handleSave = async () => {
     if (!editingId) return;
-    if (editForm.reward_type === 'free_item' && !editForm.free_item_product_id) {
-      setError('Please select a product for the free item reward.');
-      return;
-    }
     setSaving(true);
     const res = await fetch(`/api/admin/reward-tiers/${editingId}`, {
       method: 'PATCH',
@@ -112,7 +93,7 @@ export default function AdminRewardsPage() {
         description: editForm.description || null,
         reward_type: editForm.reward_type || null,
         free_item_product_id:
-          editForm.reward_type === 'free_item' ? editForm.free_item_product_id : null,
+          editForm.reward_type === 'free_item' ? (editForm.free_item_product_id || null) : null,
         is_active: editForm.is_active,
       }),
     });
@@ -241,16 +222,10 @@ export default function AdminRewardsPage() {
                     </div>
                   </div>
                   {editForm.reward_type === 'free_item' && (
-                    <div style={{ marginBottom: '1rem' }}>
-                      <label style={LABEL}>Free Product</label>
-                      <select
-                        style={INPUT}
-                        value={editForm.free_item_product_id}
-                        onChange={e => setEditForm(f => ({ ...f, free_item_product_id: e.target.value }))}
-                      >
-                        <option value="">Select product...</option>
-                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
+                    <div style={{ marginBottom: '1rem', padding: '0.8rem 1rem', background: 'var(--cream)', border: '1px solid var(--cream-dark)', borderRadius: '3px' }}>
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--grey)' }}>
+                        Customer selects their free product at checkout.
+                      </p>
                     </div>
                   )}
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '1rem' }}>
