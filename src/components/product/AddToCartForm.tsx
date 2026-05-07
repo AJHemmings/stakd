@@ -13,7 +13,7 @@ interface AddToCartFormProps {
 
 export function AddToCartForm({ product }: AddToCartFormProps) {
   return (
-    <div style={{
+    <div className="add-to-cart-form" style={{
       border: '1px solid rgba(136,136,128,0.25)',
       borderRadius: '4px',
       padding: '2rem',

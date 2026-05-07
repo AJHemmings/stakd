@@ -45,12 +45,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         &larr; BACK TO {product.categories.name.toUpperCase()}
       </Link>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '4rem',
-        alignItems: 'start'
-      }}>
+      <div className="product-layout">
         {/* Left: Product Image */}
         <div style={{
           aspectRatio: '1',
@@ -87,7 +82,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         {/* Right: Product Details & Form */}
         <div>
-          <h1 style={{ fontSize: '3.5rem', lineHeight: '1.1', marginBottom: '0.75rem', color: 'var(--dark)' }}>
+          <h1 className="product-heading" style={{ fontSize: '3.5rem', lineHeight: '1.1', marginBottom: '0.75rem', color: 'var(--dark)' }}>
             {product.name}
           </h1>
           {(product.limited_time || product.sold_out) && (
@@ -135,13 +130,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <style>{`
-        @media (max-width: 768px) {
-          div[style*="gridTemplateColumns: '1fr 1fr'"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

@@ -195,3 +195,24 @@ a {
   display: inline-block;
   animation: cart-bump 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
+
+/* Product page */
+.product-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .product-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .product-heading {
+    font-size: 2rem !important;
+  }
+  .add-to-cart-form {
+    padding: 1.25rem !important;
+  }
+}
