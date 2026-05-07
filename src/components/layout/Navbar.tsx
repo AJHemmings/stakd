@@ -8,25 +8,18 @@ export async function Navbar() {
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <nav style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: 'var(--black)',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 2.5rem',
-      height: '64px'
-    }}>
+    <nav className="navbar">
       <Link href="/" style={{
         fontFamily: 'var(--font-bebas)',
         fontSize: '1.8rem',
         color: 'var(--gold)',
         letterSpacing: '0.12em',
-        textDecoration: 'none'
+        textDecoration: 'none',
+        flexShrink: 0,
       }}>
         STAK'D
       </Link>
-      <ul style={{
-        listStyle: 'none', display: 'flex', gap: '2.5rem', margin: 0, padding: 0
-      }}>
+      <ul className="navbar-links">
         <li>
           <Link href={user ? "/profile" : "/login"} style={{
             color: 'var(--cream-dark)',
