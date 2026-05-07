@@ -18,7 +18,7 @@ interface UserReward {
 }
 
 interface RewardsData {
-  totalPoints: number;
+  orderCount: number;
   availableRewards: UserReward[];
   tiers: RewardTier[];
 }
@@ -227,7 +227,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
                       <p style={{ color: 'var(--grey)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>No rewards available yet.</p>
                       {rewardsData && (
                         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--grey)' }}>
-                          You have {rewardsData.totalPoints} pt{rewardsData.totalPoints !== 1 ? 's' : ''}. Earn 1 pt per £1 spent.
+                          {rewardsData.orderCount} order{rewardsData.orderCount !== 1 ? 's' : ''} completed. A reward unlocks every 5.
                         </p>
                       )}
                     </div>
@@ -295,7 +295,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
         </button>
 
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', textAlign: 'center', marginTop: '1rem' }}>
-          You will earn {Math.floor(cartSubtotal)} pt{Math.floor(cartSubtotal) !== 1 ? 's' : ''} on this order.
+          A reward unlocks every 5 orders.
         </p>
       </div>
     </div>

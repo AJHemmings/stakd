@@ -9,18 +9,25 @@ export async function GET() {
 
   const admin = createAdminClient();
 
-  const [pointsResult, availableRewardsResult, tiersResult] = await Promise.all([
-    admin.from('user_points').select('total_points').eq('user_email', user.email).single(),
+  const [orderCountResult, availableRewardsResult, tiersResult] = await Promise.all([
+    admin
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('customer_email', user.email)
+      .eq('payment_status', 'paid'),
     admin
       .from('user_rewards')
       .select('*, reward_tiers(*)')
       .eq('user_email', user.email)
       .eq('is_redeemed', false),
-    admin.from('reward_tiers').select('*').eq('is_active', true).order('points_required'),
+    admin
+      .from('reward_tiers')
+      .select('*, products(id, name)')
+      .order('order_milestone'),
   ]);
 
   return NextResponse.json({
-    totalPoints: pointsResult.data?.total_points ?? 0,
+    orderCount: orderCountResult.count ?? 0,
     availableRewards: availableRewardsResult.data ?? [],
     tiers: tiersResult.data ?? [],
   });

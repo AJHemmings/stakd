@@ -7,8 +7,8 @@ interface RewardTier {
   id: string;
   name: string;
   description: string | null;
-  points_required: number;
-  reward_type: 'free_delivery' | 'percent_10' | 'percent_20' | 'free_item';
+  order_milestone: number;
+  reward_type: string | null;
   free_item_product_id: string | null;
   is_active: boolean;
   products?: { id: string; name: string } | null;
@@ -38,28 +38,28 @@ const LABEL: React.CSSProperties = {
 
 const INPUT: React.CSSProperties = {
   width: '100%',
-  padding: '0.7rem 0.9rem',
+  padding: '0.6rem 0.8rem',
   border: '1px solid var(--cream-dark)',
   borderRadius: '3px',
   fontFamily: 'var(--font-outfit)',
-  fontSize: '0.95rem',
+  fontSize: '0.9rem',
   background: 'var(--white)',
   color: 'var(--dark)',
 };
 
-const emptyForm = {
-  name: '',
-  description: '',
-  points_required: '',
-  reward_type: 'free_delivery' as RewardTier['reward_type'],
-  free_item_product_id: '',
-};
+const MILESTONES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
 
 export default function AdminRewardsPage() {
   const [tiers, setTiers] = useState<RewardTier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    reward_type: '',
+    free_item_product_id: '',
+    is_active: false,
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -71,156 +71,209 @@ export default function AdminRewardsPage() {
     ]);
     if (tiersRes.ok) setTiers(await tiersRes.json());
     if (productsData) setProducts(productsData);
-    setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const openEdit = (tier: RewardTier) => {
+    setEditingId(tier.id);
+    setEditForm({
+      name: tier.name,
+      description: tier.description || '',
+      reward_type: tier.reward_type || '',
+      free_item_product_id: tier.free_item_product_id || '',
+      is_active: tier.is_active,
+    });
     setError('');
-    if (!form.name || !form.points_required) {
-      setError('Name and points required are required.');
-      return;
-    }
-    if (form.reward_type === 'free_item' && !form.free_item_product_id) {
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    if (editForm.reward_type === 'free_item' && !editForm.free_item_product_id) {
       setError('Please select a product for the free item reward.');
       return;
     }
     setSaving(true);
-    const res = await fetch('/api/admin/reward-tiers', {
-      method: 'POST',
+    const res = await fetch(`/api/admin/reward-tiers/${editingId}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...form,
-        points_required: parseInt(form.points_required),
-        free_item_product_id: form.reward_type === 'free_item' ? form.free_item_product_id : null,
+        name: editForm.name,
+        description: editForm.description || null,
+        reward_type: editForm.reward_type || null,
+        free_item_product_id:
+          editForm.reward_type === 'free_item' ? editForm.free_item_product_id : null,
+        is_active: editForm.is_active,
       }),
     });
     setSaving(false);
     if (res.ok) {
-      setForm(emptyForm);
+      setEditingId(null);
       load();
     } else {
       const d = await res.json();
-      setError(d.error || 'Failed to create tier');
+      setError(d.error || 'Failed to save');
     }
-  };
-
-  const toggleActive = async (tier: RewardTier) => {
-    await fetch(`/api/admin/reward-tiers/${tier.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_active: !tier.is_active }),
-    });
-    load();
-  };
-
-  const deleteTier = async (id: string) => {
-    if (!confirm('Delete this reward tier?')) return;
-    await fetch(`/api/admin/reward-tiers/${id}`, { method: 'DELETE' });
-    load();
   };
 
   return (
     <div>
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Reward Tiers</h1>
-      <p style={{ color: 'var(--grey)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
-        Customers earn 1 point per £1 spent. When they hit a milestone, the reward is unlocked automatically.
-      </p>
+      <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Reward Milestones</h1>
       <p style={{ color: 'var(--grey)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '3rem' }}>
-        Rewards cannot be stacked with voucher codes.
+        A reward unlocks every 5 orders. There are 10 milestones — configure what each one gives.
       </p>
 
-      {/* Create form */}
-      <div style={{ background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', padding: '2rem', marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.3rem', marginBottom: '1.5rem' }}>Add Reward Tier</h2>
-        <form onSubmit={handleCreate}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label style={LABEL}>Name</label>
-              <input style={INPUT} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Bronze Reward" />
-            </div>
-            <div>
-              <label style={LABEL}>Description</label>
-              <input style={INPUT} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Optional customer-facing description" />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div>
-              <label style={LABEL}>Points Required</label>
-              <input style={INPUT} type="number" min="1" value={form.points_required} onChange={e => setForm(f => ({ ...f, points_required: e.target.value }))} placeholder="50" />
-            </div>
-            <div>
-              <label style={LABEL}>Reward Type</label>
-              <select style={INPUT} value={form.reward_type} onChange={e => setForm(f => ({ ...f, reward_type: e.target.value as any, free_item_product_id: '' }))}>
-                <option value="free_delivery">Free Delivery</option>
-                <option value="percent_10">10% Off</option>
-                <option value="percent_20">20% Off</option>
-                <option value="free_item">Free Item</option>
-              </select>
-            </div>
-            {form.reward_type === 'free_item' && (
-              <div>
-                <label style={LABEL}>Free Product</label>
-                <select style={INPUT} value={form.free_item_product_id} onChange={e => setForm(f => ({ ...f, free_item_product_id: e.target.value }))}>
-                  <option value="">Select product...</option>
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-          {error && <p style={{ color: 'red', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '1rem' }}>{error}</p>}
-          <button type="submit" disabled={saving} className="btn btn-primary" style={{ opacity: saving ? 0.6 : 1 }}>
-            {saving ? 'Saving...' : 'Add Tier'}
-          </button>
-        </form>
-      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {MILESTONES.map(milestone => {
+          const tier = tiers.find(t => t.order_milestone === milestone);
+          const isEditing = tier && editingId === tier.id;
 
-      {/* Tier list */}
-      {loading ? (
-        <p style={{ color: 'var(--grey)', fontFamily: 'var(--font-mono)' }}>Loading...</p>
-      ) : tiers.length === 0 ? (
-        <p style={{ color: 'var(--grey)' }}>No reward tiers yet.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {tiers.map(tier => (
-            <div key={tier.id} style={{ background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', padding: '1.2rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', opacity: tier.is_active ? 1 : 0.55 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1 }}>
-                <div style={{ textAlign: 'center', minWidth: '60px' }}>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, color: 'var(--gold)', lineHeight: 1 }}>{tier.points_required}</p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--grey)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>pts</p>
-                </div>
-                <div>
-                  <p style={{ fontWeight: 600, marginBottom: '0.2rem' }}>{tier.name}</p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--choc-mid)' }}>
-                    {REWARD_TYPE_LABELS[tier.reward_type]}
-                    {tier.reward_type === 'free_item' && tier.products && ` — ${tier.products.name}`}
+          return (
+            <div
+              key={milestone}
+              style={{
+                background: 'var(--white)',
+                border: '1px solid var(--cream-dark)',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                opacity: tier && !tier.is_active ? 0.65 : 1,
+              }}
+            >
+              {/* Row */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '1.2rem 1.5rem', gap: '1.5rem' }}>
+                {/* Circle */}
+                <div style={{ textAlign: 'center', flexShrink: 0, width: 52 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '50%', margin: '0 auto',
+                    background: tier?.is_active ? 'var(--gold)' : 'var(--cream-dark)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.9rem',
+                    color: tier?.is_active ? 'var(--dark)' : 'var(--grey)',
+                  }}>
+                    {milestone}
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--grey)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.3rem' }}>
+                    orders
                   </p>
-                  {tier.description && <p style={{ fontSize: '0.85rem', color: 'var(--grey)', marginTop: '0.2rem' }}>{tier.description}</p>}
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1 }}>
+                  {tier ? (
+                    <>
+                      <p style={{ fontWeight: 600, marginBottom: '0.15rem' }}>{tier.name}</p>
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: tier.reward_type ? 'var(--choc-mid)' : 'var(--grey)' }}>
+                        {tier.reward_type
+                          ? REWARD_TYPE_LABELS[tier.reward_type]
+                          : 'No reward type set'}
+                        {tier.reward_type === 'free_item' && tier.products && ` — ${tier.products.name}`}
+                      </p>
+                    </>
+                  ) : (
+                    <p style={{ color: 'var(--grey)', fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>Not loaded</p>
+                  )}
+                </div>
+
+                {/* Status + edit button */}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+                  {tier && (
+                    <span style={{
+                      padding: '0.2rem 0.6rem', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 700,
+                      background: tier.is_active ? '#e8f5e9' : '#fafafa',
+                      color: tier.is_active ? '#2e7d32' : 'var(--grey)',
+                    }}>
+                      {tier.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
+                  {tier && (
+                    <button
+                      onClick={() => isEditing ? setEditingId(null) : openEdit(tier)}
+                      style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.75rem', padding: '0.35rem 0.8rem',
+                        border: '1px solid var(--cream-dark)', borderRadius: '3px',
+                        background: isEditing ? 'var(--dark)' : 'transparent',
+                        color: isEditing ? 'var(--gold)' : 'inherit',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {isEditing ? 'Cancel' : 'Edit'}
+                    </button>
+                  )}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <span style={{
-                  padding: '0.2rem 0.6rem', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 700,
-                  background: tier.is_active ? '#e8f5e9' : '#fafafa',
-                  color: tier.is_active ? '#2e7d32' : 'var(--grey)',
-                }}>
-                  {tier.is_active ? 'Active' : 'Inactive'}
-                </span>
-                <button onClick={() => toggleActive(tier)} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', padding: '0.3rem 0.7rem', border: '1px solid var(--cream-dark)', borderRadius: '3px', background: 'transparent', cursor: 'pointer' }}>
-                  {tier.is_active ? 'Disable' : 'Enable'}
-                </button>
-                <button onClick={() => deleteTier(tier.id)} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', padding: '0.3rem 0.7rem', border: '1px solid #ffcdd2', borderRadius: '3px', background: 'transparent', color: '#c62828', cursor: 'pointer' }}>
-                  Delete
-                </button>
-              </div>
+
+              {/* Inline edit form */}
+              {isEditing && (
+                <div style={{ padding: '1.5rem', background: 'var(--cream)', borderTop: '1px solid var(--cream-dark)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                    <div>
+                      <label style={LABEL}>Label</label>
+                      <input
+                        style={INPUT}
+                        value={editForm.name}
+                        onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder={`Milestone ${milestone}`}
+                      />
+                    </div>
+                    <div>
+                      <label style={LABEL}>Reward Type</label>
+                      <select
+                        style={INPUT}
+                        value={editForm.reward_type}
+                        onChange={e => setEditForm(f => ({ ...f, reward_type: e.target.value, free_item_product_id: '' }))}
+                      >
+                        <option value="">Select type...</option>
+                        <option value="free_delivery">Free Delivery</option>
+                        <option value="percent_10">10% Off</option>
+                        <option value="percent_20">20% Off</option>
+                        <option value="free_item">Free Item</option>
+                      </select>
+                    </div>
+                  </div>
+                  {editForm.reward_type === 'free_item' && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label style={LABEL}>Free Product</label>
+                      <select
+                        style={INPUT}
+                        value={editForm.free_item_product_id}
+                        onChange={e => setEditForm(f => ({ ...f, free_item_product_id: e.target.value }))}
+                      >
+                        <option value="">Select product...</option>
+                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={editForm.is_active}
+                      onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
+                    />
+                    Active (visible to customers)
+                  </label>
+                  {error && <p style={{ color: 'red', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="btn btn-primary"
+                      style={{ opacity: saving ? 0.6 : 1, padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      style={{ padding: '0.6rem 1.2rem', border: '1px solid var(--cream-dark)', borderRadius: '2px', background: 'transparent', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }

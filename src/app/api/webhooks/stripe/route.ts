@@ -81,53 +81,40 @@ export async function POST(req: Request) {
       if (itemsError) console.error('Error inserting order items:', itemsError);
     }
 
-    // 3. Credit loyalty points (1 pt per £1, based on cart subtotal not total)
+    // 3. Check loyalty milestones (every 5 orders = reward)
     if (customerEmail) {
-      const cartSubtotal = cartItems.reduce(
-        (sum: number, i: any) => sum + (i.price || 0) * (i.q || 1),
-        0
-      );
-      const pointsToAdd = Math.floor(cartSubtotal);
+      const { count: orderCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('customer_email', customerEmail)
+        .eq('payment_status', 'paid');
 
-      if (pointsToAdd > 0) {
-        const { data: existingPoints } = await supabase
-          .from('user_points')
-          .select('id, total_points')
-          .eq('user_email', customerEmail)
-          .single();
+      if (orderCount && orderCount > 0) {
+        // Find all milestones hit (multiples of 5 up to order count, max 50)
+        const milestonesHit: number[] = [];
+        for (let m = 5; m <= Math.min(orderCount, 50); m += 5) milestonesHit.push(m);
 
-        let newTotal: number;
-        if (existingPoints) {
-          newTotal = existingPoints.total_points + pointsToAdd;
-          await supabase
-            .from('user_points')
-            .update({ total_points: newTotal, updated_at: new Date().toISOString() })
-            .eq('user_email', customerEmail);
-        } else {
-          newTotal = pointsToAdd;
-          await supabase.from('user_points').insert({ user_email: customerEmail, total_points: newTotal });
-        }
+        if (milestonesHit.length > 0) {
+          const { data: tiers } = await supabase
+            .from('reward_tiers')
+            .select('id, order_milestone')
+            .in('order_milestone', milestonesHit)
+            .eq('is_active', true);
 
-        // Check for newly unlocked reward tiers
-        const { data: tiers } = await supabase
-          .from('reward_tiers')
-          .select('id')
-          .eq('is_active', true)
-          .lte('points_required', newTotal);
+          if (tiers && tiers.length > 0) {
+            const { data: alreadyEarned } = await supabase
+              .from('user_rewards')
+              .select('tier_id')
+              .eq('user_email', customerEmail);
 
-        if (tiers && tiers.length > 0) {
-          const { data: alreadyEarned } = await supabase
-            .from('user_rewards')
-            .select('tier_id')
-            .eq('user_email', customerEmail);
+            const earnedIds = new Set(alreadyEarned?.map((r) => r.tier_id) ?? []);
+            const newUnlocks = tiers.filter((t) => !earnedIds.has(t.id));
 
-          const earnedIds = new Set(alreadyEarned?.map((r) => r.tier_id) ?? []);
-          const newUnlocks = tiers.filter((t) => !earnedIds.has(t.id));
-
-          if (newUnlocks.length > 0) {
-            await supabase.from('user_rewards').insert(
-              newUnlocks.map((t) => ({ user_email: customerEmail, tier_id: t.id }))
-            );
+            if (newUnlocks.length > 0) {
+              await supabase.from('user_rewards').insert(
+                newUnlocks.map((t) => ({ user_email: customerEmail, tier_id: t.id }))
+              );
+            }
           }
         }
       }

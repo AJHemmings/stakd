@@ -13,25 +13,167 @@ const REWARD_TYPE_LABELS: Record<string, string> = {
 interface RewardTier {
   id: string;
   name: string;
-  points_required: number;
-  reward_type: string;
+  order_milestone: number;
+  reward_type: string | null;
   is_active: boolean;
 }
 
 interface UserReward {
   id: string;
+  tier_id: string;
   earned_at: string;
   reward_tiers: RewardTier;
 }
 
 interface RewardsData {
-  totalPoints: number;
+  orderCount: number;
   availableRewards: UserReward[];
   tiers: RewardTier[];
 }
 
+function LoyaltyCardModal({ data, onClose }: { data: RewardsData; onClose: () => void }) {
+  const { orderCount, availableRewards, tiers } = data;
+  const earnedTierIds = new Set(availableRewards.map(r => r.tier_id));
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 }}
+      />
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        background: 'var(--white)', borderRadius: '6px', zIndex: 1000,
+        width: '90%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto',
+        padding: '2rem',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>LOYALTY CARD</h2>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--grey)' }}>
+              {orderCount} / 50 orders completed
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', fontSize: '1.8rem', cursor: 'pointer', color: 'var(--grey)', lineHeight: 1, padding: '0.25rem' }}
+          >
+            &times;
+          </button>
+        </div>
+
+        {/* 50-circle grid: 5 columns × 10 rows */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: '0.5rem',
+          marginBottom: '1.5rem',
+        }}>
+          {Array.from({ length: 50 }, (_, i) => {
+            const orderNum = i + 1;
+            const isFilled = orderNum <= orderCount;
+            const isMilestone = orderNum % 5 === 0;
+            const tier = isMilestone ? tiers.find(t => t.order_milestone === orderNum) : null;
+            const isEarned = tier ? earnedTierIds.has(tier.id) : false;
+
+            return (
+              <div
+                key={i}
+                title={tier?.name ?? undefined}
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: '50%',
+                  background: isFilled
+                    ? isMilestone ? 'var(--gold)' : 'var(--choc-mid)'
+                    : isMilestone ? 'transparent' : 'var(--cream-dark)',
+                  border: isMilestone
+                    ? `2px solid ${isFilled ? 'var(--gold)' : 'var(--cream-dark)'}`
+                    : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.65rem',
+                  color: isFilled ? 'var(--dark)' : 'var(--grey)',
+                  position: 'relative',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                {isMilestone && (
+                  <span style={{
+                    fontSize: isFilled ? '0.8rem' : '0.7rem',
+                    opacity: isFilled ? 1 : 0.4,
+                  }}>
+                    ★
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--cream-dark)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--choc-mid)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)' }}>Order</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--gold)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.45rem' }}>★</div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)' }}>Reward milestone</span>
+          </div>
+        </div>
+
+        {/* Upcoming milestones */}
+        {tiers.filter(t => t.is_active && t.order_milestone > orderCount).length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--grey)', marginBottom: '0.6rem' }}>
+              Upcoming Rewards
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {tiers
+                .filter(t => t.is_active && t.order_milestone > orderCount)
+                .slice(0, 3)
+                .map(t => (
+                  <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: 'var(--cream)', borderRadius: '3px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.name}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--grey)' }}>
+                      at {t.order_milestone} orders{t.reward_type ? ` — ${REWARD_TYPE_LABELS[t.reward_type]}` : ''}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Available rewards */}
+        {availableRewards.length > 0 && (
+          <div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--grey)', marginBottom: '0.6rem' }}>
+              Available to Use
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {availableRewards.map(r => (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: '#e8f5e9', borderRadius: '3px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{r.reward_tiers.name}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#2e7d32' }}>
+                    {r.reward_tiers.reward_type ? REWARD_TYPE_LABELS[r.reward_tiers.reward_type] : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)', marginTop: '0.5rem' }}>Select at checkout to redeem.</p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function RewardsSection() {
   const [data, setData] = useState<RewardsData | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/rewards')
@@ -41,56 +183,69 @@ function RewardsSection() {
 
   if (!data) return null;
 
-  const nextTier = data.tiers.find(t => t.points_required > data.totalPoints);
-  const progressPct = nextTier
-    ? Math.min(100, (data.totalPoints / nextTier.points_required) * 100)
-    : 100;
+  const { orderCount, availableRewards, tiers } = data;
+  const nextMilestone = tiers.find(t => t.is_active && t.order_milestone > orderCount);
+  const ordersUntilNext = nextMilestone ? nextMilestone.order_milestone - orderCount : 0;
 
   return (
-    <div>
-      <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--choc-mid)' }}>Rewards</h2>
-      <div className="card" style={{ padding: '1.5rem' }}>
-        {/* Points balance */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.75rem' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Points</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, color: 'var(--gold)' }}>{data.totalPoints}</span>
-        </div>
+    <>
+      {open && <LoyaltyCardModal data={data} onClose={() => setOpen(false)} />}
 
-        {/* Progress bar */}
-        {nextTier && (
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ height: '6px', background: 'var(--cream-dark)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--gold)', borderRadius: '3px', transition: 'width 0.4s ease' }} />
+      <div>
+        <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--choc-mid)' }}>Loyalty Card</h2>
+        <button
+          onClick={() => setOpen(true)}
+          style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <div className="card" style={{ padding: '1.2rem 1.5rem' }}>
+            {/* Mini circle preview — first 5 circles */}
+            <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.75rem' }}>
+              {Array.from({ length: 5 }, (_, i) => {
+                const orderNum = i + 1;
+                const isFilled = orderNum <= orderCount;
+                const isMilestone = orderNum === 5;
+                return (
+                  <div key={i} style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: isFilled
+                      ? isMilestone ? 'var(--gold)' : 'var(--choc-mid)'
+                      : 'var(--cream-dark)',
+                    border: isMilestone ? `1.5px solid ${isFilled ? 'var(--gold)' : 'var(--cream-dark)'}` : 'none',
+                    flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.4rem',
+                    color: isFilled ? 'var(--dark)' : 'transparent',
+                  }}>
+                    {isMilestone ? '★' : ''}
+                  </div>
+                );
+              })}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)', marginLeft: '0.25rem', alignSelf: 'center' }}>
+                ...
+              </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', marginTop: '0.4rem' }}>
-              {data.totalPoints} / {nextTier.points_required} pts — next: {nextTier.name}
-            </p>
-          </div>
-        )}
 
-        {/* Available rewards */}
-        {data.availableRewards.length > 0 && (
-          <div style={{ borderTop: '1px solid var(--cream-dark)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--grey)', marginBottom: '0.6rem' }}>Available to use</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {data.availableRewards.map(r => (
-                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: '#e8f5e9', borderRadius: '3px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{r.reward_tiers.name}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#2e7d32' }}>{REWARD_TYPE_LABELS[r.reward_tiers.reward_type]}</span>
-                </div>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <div>
+                <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                  {orderCount} order{orderCount !== 1 ? 's' : ''} completed
+                </p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', marginTop: '0.2rem' }}>
+                  {availableRewards.length > 0
+                    ? `${availableRewards.length} reward${availableRewards.length !== 1 ? 's' : ''} available`
+                    : nextMilestone
+                    ? `${ordersUntilNext} more until next reward`
+                    : 'View your progress'}
+                </p>
+              </div>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 700 }}>
+                View →
+              </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)', marginTop: '0.6rem' }}>Apply at checkout.</p>
           </div>
-        )}
-
-        {data.totalPoints === 0 && data.availableRewards.length === 0 && (
-          <p style={{ fontSize: '0.85rem', color: 'var(--grey)', marginTop: '0.25rem' }}>
-            Earn 1 point per £1 spent. Rewards unlock at milestones.
-          </p>
-        )}
+        </button>
       </div>
-    </div>
+    </>
   );
 }
 
