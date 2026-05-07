@@ -85,8 +85,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <h1 className="product-heading" style={{ fontSize: '3.5rem', lineHeight: '1.1', marginBottom: '0.75rem', color: 'var(--dark)' }}>
             {product.name}
           </h1>
-          {(product.limited_time || product.sold_out) && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          {(product.limited_time || product.sold_out || product.best_consumed_chilled) && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
               {product.limited_time && (
                 <span style={{
                   fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.12em',
@@ -101,6 +101,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                   color: 'var(--grey)', border: '1px solid rgba(136,136,128,0.4)', borderRadius: '2px',
                   padding: '0.35rem 0.75rem', background: 'rgba(0,0,0,0.06)'
                 }}>SOLD OUT</span>
+              )}
+              {product.best_consumed_chilled && (
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.12em',
+                  color: '#1e6eb5', border: '1px solid rgba(30,110,181,0.35)', borderRadius: '2px',
+                  padding: '0.35rem 0.75rem', background: 'rgba(30,110,181,0.06)'
+                }}>BEST CONSUMED CHILLED</span>
               )}
             </div>
           )}

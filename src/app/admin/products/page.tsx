@@ -22,6 +22,7 @@ export default function AdminProductsPage() {
     image_url: '',
     limited_time: false,
     sold_out: false,
+    best_consumed_chilled: false,
     badge_text: '',
     ingredients: '',
     weight: '',
@@ -81,6 +82,7 @@ export default function AdminProductsPage() {
       image_url: product.image_url || '',
       limited_time: product.limited_time,
       sold_out: product.sold_out,
+      best_consumed_chilled: product.best_consumed_chilled || false,
       badge_text: product.badge_text || '',
       ingredients: product.ingredients || '',
       weight: product.weight || '',
@@ -121,7 +123,7 @@ export default function AdminProductsPage() {
       setEditingId(null);
       setFormData({
         name: '', slug: '', category_id: '', price: '', description: '', image_url: '',
-        limited_time: false, sold_out: false, badge_text: '',
+        limited_time: false, sold_out: false, best_consumed_chilled: false, badge_text: '',
         ingredients: '', weight: '', calories: '', allergens: []
       });
       fetchData();
@@ -228,6 +230,10 @@ export default function AdminProductsPage() {
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
                     <input type="checkbox" checked={formData.sold_out} onChange={(e) => setFormData({...formData, sold_out: e.target.checked})} />
                     <span style={{ fontSize: '0.9rem', color: 'var(--dark)' }}>Sold Out</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', gridColumn: '1 / -1' }}>
+                    <input type="checkbox" checked={formData.best_consumed_chilled} onChange={(e) => setFormData({...formData, best_consumed_chilled: e.target.checked})} />
+                    <span style={{ fontSize: '0.9rem', color: 'var(--dark)' }}>Best Consumed Chilled</span>
                   </label>
                 </div>
                 <div style={{ marginTop: '1.5rem' }}>

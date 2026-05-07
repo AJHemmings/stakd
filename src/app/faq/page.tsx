@@ -21,31 +21,31 @@ const SECTIONS: FAQSection[] = [
         q: 'How much does delivery cost?',
         a: (
           <>
-            Shipping is calculated by how many bars you order:
+            We use Royal Mail Special Delivery to get your bars to you as fast and as fresh as possible. Because of this, shipping costs are slightly higher than standard:
             <ul style={{ marginTop: '0.75rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <li>1 bar — £5.99</li>
-              <li>2–3 bars — £7.99</li>
-              <li>4+ bars — £9.99</li>
-              <li style={{ fontWeight: 600 }}>Orders over £45 — Free delivery</li>
+              <li>1 bar: £5.99</li>
+              <li>2-3 bars: £7.99</li>
+              <li>4+ bars: £9.99</li>
+              <li style={{ fontWeight: 600 }}>Orders over £45: free delivery</li>
             </ul>
           </>
         ),
       },
       {
         q: 'How long does delivery take?',
-        a: 'We ship via Royal Mail Special Delivery. Orders placed before 3pm on a working day are dispatched the same day and arrive the next working day. You\'ll receive an email confirmation with tracking details once your order is on its way.',
+        a: "We use Royal Mail Special Delivery next-day tracked because we want our chocolate bars to arrive at you as fresh as possible. Orders placed before 3pm on a working day are dispatched the same day and arrive the next working day. You'll receive an email confirmation with tracking details once your order is on its way.",
       },
       {
         q: 'Do you ship outside the UK?',
-        a: 'We currently ship to UK addresses only. We\'re working on expanding — keep an eye on our updates.',
+        a: "We currently ship to UK addresses only. We're working on expanding, so keep an eye on our updates.",
       },
       {
         q: 'Can I track my order?',
-        a: 'Yes. Once your order has been dispatched you\'ll receive a confirmation email. Royal Mail Special Delivery shipments include a tracking reference and signature-on-delivery, so you can follow your parcel every step of the way.',
+        a: "Yes. Once your order has been dispatched you'll receive a confirmation email. Royal Mail Special Delivery shipments include a tracking reference and signature-on-delivery, so you can follow your parcel every step of the way.",
       },
       {
         q: 'Will my order fit through the letterbox?',
-        a: 'No. Royal Mail Special Delivery requires a signature, so someone will need to be in to receive it. If no one is home, Royal Mail will leave a card and hold it at your local depot for collection.',
+        a: "No. Royal Mail Special Delivery requires a signature, so someone will need to be in to receive it. If no one is home, Royal Mail will leave a card and hold it at your local depot for collection.",
       },
     ],
   },
@@ -54,15 +54,15 @@ const SECTIONS: FAQSection[] = [
     items: [
       {
         q: 'How big are the bars?',
-        a: 'Each bar weighs between 470–500g. They\'re generously sized — designed to be shared, or not. We won\'t judge.',
+        a: "Each bar weighs between 470-500g. They're generously sized, designed to be shared or not. We won't judge.",
       },
       {
         q: 'What bases are available?',
-        a: 'Each product comes in a range of bases — for example, cookie dough, brownie, or blondie. The base is the layer that the chocolate is built on top of. You\'ll find the available options on each product page.',
+        a: "Each product comes in a range of bases, for example cookie dough, brownie, or blondie. The base is the layer that the chocolate is built on top of. You'll find the available options on each product page.",
       },
       {
         q: 'Do the bars contain allergens?',
-        a: 'Yes. Our products are made in a kitchen that handles milk, eggs, wheat, soya, and nuts. Full allergen information is listed on each individual product page — always check before ordering if you have any allergies or intolerances.',
+        a: 'Yes. Our products are made in a kitchen that handles milk, eggs, wheat, soya, and nuts. Full allergen information is listed on each individual product page, so always check before ordering if you have any allergies or intolerances.',
       },
       {
         q: 'Are the bars suitable for vegetarians?',
@@ -70,11 +70,11 @@ const SECTIONS: FAQSection[] = [
       },
       {
         q: 'How should I store my bar?',
-        a: 'Keep your bar in a cool, dry place away from direct sunlight. If your home is warm, the fridge works well — just let it come to room temperature for 10–15 minutes before eating for the best texture. Once opened, consume within a few days.',
+        a: "We recommend storing your bar in the fridge for the best shelf life. Some fillings, like cookie dough, taste even better straight from the fridge. Once opened, consume within a few days.",
       },
       {
         q: 'What is the shelf life?',
-        a: 'The best-before date is printed on each bar\'s packaging. We always send fresh stock, so you\'ll typically have several weeks from the date of delivery.',
+        a: "The best-before date is printed on each bar's packaging and included in your order confirmation. Products marked 'best consumed chilled' should be kept refrigerated. We always send fresh stock, so you'll typically have several weeks from the date of delivery.",
       },
     ],
   },
@@ -82,24 +82,24 @@ const SECTIONS: FAQSection[] = [
     title: 'Orders & Returns',
     items: [
       {
-        q: 'My order arrived damaged — what do I do?',
+        q: 'My order arrived damaged. What do I do?',
         a: (
           <>
-            We\'re sorry to hear that. Take a photo of the damage and get in touch via the{' '}
+            We're sorry to hear that. Take a photo of the damage and get in touch via the{' '}
             <Link href="/contact" style={{ color: 'var(--gold)', borderBottom: '1px solid var(--gold)', textDecoration: 'none' }}>
               contact page
             </Link>
-            . We\'ll make it right.
+            . We'll make it right.
           </>
         ),
       },
       {
         q: 'Can I cancel or change my order?',
-        a: 'We process orders quickly, so changes may not always be possible once payment is confirmed. Contact us as soon as possible and we\'ll do our best to help.',
+        a: "We process orders quickly, so changes may not always be possible once payment is confirmed. Contact us as soon as possible and we'll do our best to help.",
       },
       {
         q: 'Can I return a product?',
-        a: 'Due to the perishable nature of food products, we\'re unable to accept returns. If something is wrong with your order — damaged, missing, or incorrect — please contact us and we\'ll sort it.',
+        a: "Due to the perishable nature of food products, we're unable to accept returns. If something is wrong with your order (damaged, missing, or incorrect), please contact us and we'll sort it.",
       },
       {
         q: 'Do I need an account to order?',
@@ -112,7 +112,7 @@ const SECTIONS: FAQSection[] = [
     items: [
       {
         q: 'How does the loyalty programme work?',
-        a: 'Every order you complete fills one circle on your loyalty card — you can see it in your account profile. Every 5 orders you hit a milestone and unlock a reward. Milestones go up to 50 orders, with 10 rewards in total. Rewards include free delivery, percentage discounts, and free bars.',
+        a: 'Every order you complete fills one circle on your loyalty card, which you can see in your account profile. Every 5 orders you hit a milestone and unlock a reward. Milestones go up to 50 orders, with 10 rewards in total. Rewards include free delivery, percentage discounts, and free bars.',
       },
       {
         q: 'How do I use a voucher code?',
@@ -120,11 +120,11 @@ const SECTIONS: FAQSection[] = [
       },
       {
         q: 'Can I use a voucher and a reward at the same time?',
-        a: 'No — only one discount applies per order. You\'ll need to choose between your voucher code or a loyalty reward.',
+        a: "No, only one discount applies per order. You'll need to choose between your voucher code or a loyalty reward.",
       },
       {
         q: 'Do my rewards expire?',
-        a: 'Earned rewards stay in your account until you use them. There\'s no expiry date on loyalty milestones.',
+        a: "Earned rewards stay in your account until you use them. There's no expiry date on loyalty milestones.",
       },
     ],
   },
@@ -177,7 +177,7 @@ export default function FAQPage() {
         Frequently Asked Questions
       </h1>
       <p style={{ color: 'var(--grey)', fontSize: '1rem', lineHeight: 1.7, marginBottom: '4rem' }}>
-        Everything you need to know before your first order — or your fiftieth.
+        Everything you need to know before your first order, or your fiftieth.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
