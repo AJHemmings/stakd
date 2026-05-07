@@ -38,12 +38,8 @@ export async function POST(req: Request) {
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
     const stripeSessionId = session.id;
     const sessionAny = session as any;
-    console.log('[webhook] shipping_details:', JSON.stringify(session.shipping_details));
-    console.log('[webhook] collected_information:', JSON.stringify(sessionAny.collected_information));
-    console.log('[webhook] session keys:', Object.keys(sessionAny).join(', '));
-
     const shippingAddress =
-      session.shipping_details?.address ??
+      sessionAny.shipping_details?.address ??
       sessionAny.collected_information?.shipping_details?.address ??
       null;
     
