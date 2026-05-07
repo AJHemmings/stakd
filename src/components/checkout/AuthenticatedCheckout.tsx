@@ -45,7 +45,7 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
   const [discountTab, setDiscountTab] = useState<'voucher' | 'reward'>('voucher');
   const [voucherInput, setVoucherInput] = useState('');
   const [voucherError, setVoucherError] = useState('');
-  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; label: string; discountAmount: number } | null>(null);
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; label: string; discountAmount: number; deliveryType?: string } | null>(null);
   const [validatingVoucher, setValidatingVoucher] = useState(false);
 
   const [rewardsData, setRewardsData] = useState<RewardsData | null>(null);
@@ -86,10 +86,16 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
       return;
     }
     const d = await res.json();
+    const deliveryType = (d.discount_type === 'free_delivery' || d.discount_type === 'one_pound_delivery')
+      ? d.discount_type : undefined;
     setAppliedVoucher({
       code: d.code,
-      label: d.discount_type === 'percentage' ? `${d.discount_value}% off` : `£${d.discount_value} off`,
+      label: d.discount_type === 'percentage' ? `${d.discount_value}% off`
+        : d.discount_type === 'fixed' ? `£${d.discount_value} off`
+        : d.discount_type === 'free_delivery' ? 'Free Delivery'
+        : '£1 Delivery',
       discountAmount: d.discountAmount,
+      deliveryType,
     });
     setSelectedRewardId(null);
   };
@@ -163,7 +169,11 @@ export function AuthenticatedCheckout({ user }: { user: any }) {
   const selectedReward = rewardsData?.availableRewards.find(r => r.id === selectedRewardId);
 
   // Calculate display totals
-  const shippingCost = selectedReward?.reward_tiers.reward_type === 'free_delivery' ? 0 : 3.99;
+  const shippingCost =
+    appliedVoucher?.deliveryType === 'free_delivery' ? 0
+    : appliedVoucher?.deliveryType === 'one_pound_delivery' ? 1
+    : selectedReward?.reward_tiers.reward_type === 'free_delivery' ? 0
+    : 3.99;
   const discountAmount = appliedVoucher ? appliedVoucher.discountAmount
     : selectedReward?.reward_tiers.reward_type === 'percent_10' ? cartSubtotal * 0.1
     : selectedReward?.reward_tiers.reward_type === 'percent_20' ? cartSubtotal * 0.2

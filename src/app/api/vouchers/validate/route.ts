@@ -22,9 +22,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'This code has reached its usage limit' }, { status: 400 });
   }
 
-  const discountAmount = data.discount_type === 'percentage'
-    ? (cartTotal * data.discount_value) / 100
-    : data.discount_value;
+  const isDeliveryType = data.discount_type === 'free_delivery' || data.discount_type === 'one_pound_delivery';
+  const discountAmount = isDeliveryType
+    ? 0
+    : data.discount_type === 'percentage'
+      ? (cartTotal * data.discount_value) / 100
+      : data.discount_value;
 
   return NextResponse.json({
     id: data.id,
@@ -32,6 +35,6 @@ export async function POST(req: NextRequest) {
     code: data.code,
     discount_type: data.discount_type,
     discount_value: data.discount_value,
-    discountAmount: Math.min(discountAmount, cartTotal),
+    discountAmount: isDeliveryType ? 0 : Math.min(discountAmount, cartTotal),
   });
 }

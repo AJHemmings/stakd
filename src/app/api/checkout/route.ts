@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     );
 
     let freeDelivery = false;
+    let onePoundDelivery = false;
     let discountLabel = '';
     const metadata: Record<string, string> = {
       cart_data: JSON.stringify(
@@ -51,27 +52,34 @@ export async function POST(req: Request) {
         .single();
 
       if (voucher) {
-        const discountPence =
-          voucher.discount_type === 'percentage'
-            ? Math.round((cartSubtotalPence * voucher.discount_value) / 100)
-            : Math.min(Math.round(voucher.discount_value * 100), cartSubtotalPence);
+        metadata.voucher_code = voucher.code;
+        discountLabel = voucher.code;
 
-        if (discountPence > 0) {
-          lineItems.push({
-            price_data: {
-              currency: 'gbp',
-              product_data: {
-                name:
-                  voucher.discount_type === 'percentage'
-                    ? `Voucher: ${voucher.name} (${voucher.discount_value}% off)`
-                    : `Voucher: ${voucher.name} (£${voucher.discount_value} off)`,
+        if (voucher.discount_type === 'free_delivery') {
+          freeDelivery = true;
+        } else if (voucher.discount_type === 'one_pound_delivery') {
+          onePoundDelivery = true;
+        } else {
+          const discountPence =
+            voucher.discount_type === 'percentage'
+              ? Math.round((cartSubtotalPence * voucher.discount_value) / 100)
+              : Math.min(Math.round(voucher.discount_value * 100), cartSubtotalPence);
+
+          if (discountPence > 0) {
+            lineItems.push({
+              price_data: {
+                currency: 'gbp',
+                product_data: {
+                  name:
+                    voucher.discount_type === 'percentage'
+                      ? `Voucher: ${voucher.name} (${voucher.discount_value}% off)`
+                      : `Voucher: ${voucher.name} (£${voucher.discount_value} off)`,
+                },
+                unit_amount: -discountPence,
               },
-              unit_amount: -discountPence,
-            },
-            quantity: 1,
-          });
-          discountLabel = voucher.code;
-          metadata.voucher_code = voucher.code;
+              quantity: 1,
+            });
+          }
         }
       }
     } else if (rewardId) {
@@ -133,29 +141,26 @@ export async function POST(req: Request) {
       }
     }
 
-    const shippingOptions: any[] = freeDelivery
-      ? [
-          {
-            shipping_rate_data: {
-              type: 'fixed_amount',
-              fixed_amount: { amount: 0, currency: 'gbp' },
-              display_name: 'Free Delivery (Reward)',
-            },
+    const shippingAmount = freeDelivery ? 0 : onePoundDelivery ? 100 : 399;
+    const shippingLabel = freeDelivery
+      ? 'Free Delivery'
+      : onePoundDelivery
+        ? '£1 Delivery'
+        : 'Standard Shipping';
+
+    const shippingOptions: any[] = [{
+      shipping_rate_data: {
+        type: 'fixed_amount',
+        fixed_amount: { amount: shippingAmount, currency: 'gbp' },
+        display_name: shippingLabel,
+        ...(shippingAmount > 0 ? {
+          delivery_estimate: {
+            minimum: { unit: 'business_day', value: 3 },
+            maximum: { unit: 'business_day', value: 5 },
           },
-        ]
-      : [
-          {
-            shipping_rate_data: {
-              type: 'fixed_amount',
-              fixed_amount: { amount: 399, currency: 'gbp' },
-              display_name: 'Standard Shipping',
-              delivery_estimate: {
-                minimum: { unit: 'business_day', value: 3 },
-                maximum: { unit: 'business_day', value: 5 },
-              },
-            },
-          },
-        ];
+        } : {}),
+      },
+    }];
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
