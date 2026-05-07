@@ -28,11 +28,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  // Handle the event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    
-    // Extract metadata and other info
+
     const customerEmail = session.customer_details?.email;
     const customerName = session.customer_details?.name;
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
@@ -42,10 +40,11 @@ export async function POST(req: Request) {
       sessionAny.shipping_details?.address ??
       sessionAny.collected_information?.shipping_details?.address ??
       null;
-    
-    // Get cart data from metadata
+
     const cartDataRaw = session.metadata?.cart_data;
     const cartItems = cartDataRaw ? JSON.parse(cartDataRaw) : [];
+    const voucherCode = session.metadata?.voucher_code;
+    const rewardId = session.metadata?.reward_id;
 
     const supabase = createAdminClient();
 
@@ -59,7 +58,7 @@ export async function POST(req: Request) {
         shipping_address: shippingAddress,
         total_amount: totalAmount,
         payment_status: session.payment_status,
-        fulfillment_status: 'RECEIVED'
+        fulfillment_status: 'RECEIVED',
       })
       .select()
       .single();
@@ -78,30 +77,99 @@ export async function POST(req: Request) {
         quantity: item.q,
         unit_price: item.price || 0,
       }));
+      const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
+      if (itemsError) console.error('Error inserting order items:', itemsError);
+    }
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(itemsToInsert);
+    // 3. Credit loyalty points (1 pt per £1, based on cart subtotal not total)
+    if (customerEmail) {
+      const cartSubtotal = cartItems.reduce(
+        (sum: number, i: any) => sum + (i.price || 0) * (i.q || 1),
+        0
+      );
+      const pointsToAdd = Math.floor(cartSubtotal);
 
-      if (itemsError) {
-        console.error('Error inserting order items:', itemsError);
+      if (pointsToAdd > 0) {
+        const { data: existingPoints } = await supabase
+          .from('user_points')
+          .select('id, total_points')
+          .eq('user_email', customerEmail)
+          .single();
+
+        let newTotal: number;
+        if (existingPoints) {
+          newTotal = existingPoints.total_points + pointsToAdd;
+          await supabase
+            .from('user_points')
+            .update({ total_points: newTotal, updated_at: new Date().toISOString() })
+            .eq('user_email', customerEmail);
+        } else {
+          newTotal = pointsToAdd;
+          await supabase.from('user_points').insert({ user_email: customerEmail, total_points: newTotal });
+        }
+
+        // Check for newly unlocked reward tiers
+        const { data: tiers } = await supabase
+          .from('reward_tiers')
+          .select('id')
+          .eq('is_active', true)
+          .lte('points_required', newTotal);
+
+        if (tiers && tiers.length > 0) {
+          const { data: alreadyEarned } = await supabase
+            .from('user_rewards')
+            .select('tier_id')
+            .eq('user_email', customerEmail);
+
+          const earnedIds = new Set(alreadyEarned?.map((r) => r.tier_id) ?? []);
+          const newUnlocks = tiers.filter((t) => !earnedIds.has(t.id));
+
+          if (newUnlocks.length > 0) {
+            await supabase.from('user_rewards').insert(
+              newUnlocks.map((t) => ({ user_email: customerEmail, tier_id: t.id }))
+            );
+          }
+        }
+      }
+
+      // 4. Mark voucher used
+      if (voucherCode) {
+        const { data: vc } = await supabase
+          .from('voucher_codes')
+          .select('uses_count')
+          .eq('code', voucherCode)
+          .single();
+        if (vc) {
+          await supabase
+            .from('voucher_codes')
+            .update({ uses_count: vc.uses_count + 1 })
+            .eq('code', voucherCode);
+        }
+      }
+
+      // 5. Mark reward redeemed
+      if (rewardId) {
+        await supabase
+          .from('user_rewards')
+          .update({ is_redeemed: true, redeemed_at: new Date().toISOString() })
+          .eq('id', rewardId);
       }
     }
 
-    // 3. Sync to Google Sheets
+    // 6. Sync to Google Sheets
     try {
       await syncOrderToSheets({
         orderId: order.id,
         customerName: customerName || 'Unknown',
         total: totalAmount,
         status: 'RECEIVED',
-        items: cartItems.map((i: any) => ({ name: i.name, quantity: i.q, base: i.base }))
+        items: cartItems.map((i: any) => ({ name: i.name, quantity: i.q, base: i.base })),
       });
     } catch (sheetError) {
       console.error('Failed to sync to Google Sheets:', sheetError);
     }
 
-    console.log(`Order ${order.id} created successfully from Stripe session ${stripeSessionId}`);
+    console.log(`Order ${order.id} created from Stripe session ${stripeSessionId}`);
   }
 
   return NextResponse.json({ received: true });

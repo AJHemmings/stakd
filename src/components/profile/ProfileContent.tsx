@@ -3,6 +3,97 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { OrderList, Order } from './OrderList';
 
+const REWARD_TYPE_LABELS: Record<string, string> = {
+  free_delivery: 'Free Delivery',
+  percent_10: '10% Off',
+  percent_20: '20% Off',
+  free_item: 'Free Item',
+};
+
+interface RewardTier {
+  id: string;
+  name: string;
+  points_required: number;
+  reward_type: string;
+  is_active: boolean;
+}
+
+interface UserReward {
+  id: string;
+  earned_at: string;
+  reward_tiers: RewardTier;
+}
+
+interface RewardsData {
+  totalPoints: number;
+  availableRewards: UserReward[];
+  tiers: RewardTier[];
+}
+
+function RewardsSection() {
+  const [data, setData] = useState<RewardsData | null>(null);
+
+  useEffect(() => {
+    fetch('/api/rewards')
+      .then(r => r.ok ? r.json() : null)
+      .then(setData);
+  }, []);
+
+  if (!data) return null;
+
+  const nextTier = data.tiers.find(t => t.points_required > data.totalPoints);
+  const progressPct = nextTier
+    ? Math.min(100, (data.totalPoints / nextTier.points_required) * 100)
+    : 100;
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--choc-mid)' }}>Rewards</h2>
+      <div className="card" style={{ padding: '1.5rem' }}>
+        {/* Points balance */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.75rem' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Points</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, color: 'var(--gold)' }}>{data.totalPoints}</span>
+        </div>
+
+        {/* Progress bar */}
+        {nextTier && (
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ height: '6px', background: 'var(--cream-dark)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--gold)', borderRadius: '3px', transition: 'width 0.4s ease' }} />
+            </div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--grey)', marginTop: '0.4rem' }}>
+              {data.totalPoints} / {nextTier.points_required} pts — next: {nextTier.name}
+            </p>
+          </div>
+        )}
+
+        {/* Available rewards */}
+        {data.availableRewards.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--cream-dark)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--grey)', marginBottom: '0.6rem' }}>Available to use</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {data.availableRewards.map(r => (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: '#e8f5e9', borderRadius: '3px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{r.reward_tiers.name}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#2e7d32' }}>{REWARD_TYPE_LABELS[r.reward_tiers.reward_type]}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--grey)', marginTop: '0.6rem' }}>Apply at checkout.</p>
+          </div>
+        )}
+
+        {data.totalPoints === 0 && data.availableRewards.length === 0 && (
+          <p style={{ fontSize: '0.85rem', color: 'var(--grey)', marginTop: '0.25rem' }}>
+            Earn 1 point per £1 spent. Rewards unlock at milestones.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const TICKET_STATUS_STYLES: Record<string, { label: string; color: string; bg: string }> = {
   OPEN: { label: 'Open', color: '#e65100', bg: '#fff3e0' },
   IN_PROGRESS: { label: 'In Progress', color: '#1565c0', bg: '#e3f2fd' },
@@ -181,6 +272,8 @@ export function ProfileContent({ user, initialOrders }: { user: { email: string 
               <p style={{ fontSize: '1rem', fontWeight: 600, wordBreak: 'break-all' }}>{user.email}</p>
             </div>
           </div>
+
+          <RewardsSection />
 
           <div>
             <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--choc-mid)' }}>Support</h2>
