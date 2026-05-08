@@ -82,12 +82,12 @@ function wrapTemplate(content: string) {
 /* --- HTML Generators --- */
 
 export function getWelcomeEmailHtml(name?: string) {
-  const isDev = process.env.NODE_ENV === 'development';
-  const baseUrl = isDev ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://stakdbars.com');
+  // Always use the production URL for images so they load in external email clients
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://stakdbars.com';
   const heroImageUrl = `${baseUrl}/welcome-hero.jpg`;
 
   return wrapTemplate(`
-    <h1 style="font-size: 24px; margin-bottom: 20px;">WELCOME TO THE CLUB, ${name?.toUpperCase() || 'LEGEND'}!</h1>
+    <h1 style="font-size: 24px; margin-bottom: 20px;">WELCOME TO THE CLUB, YOU LEGEND!</h1>
     <p>Thanks for joining STAK'D. You're now a legendary part of a community that doesn't settle for average.</p>
     
     <div style="text-align: center; margin: 30px 0;">
