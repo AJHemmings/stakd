@@ -87,7 +87,7 @@ export function getWelcomeEmailHtml(name?: string) {
   const heroImageUrl = `${baseUrl}/welcome-hero.jpg`;
 
   return wrapTemplate(`
-    <h1 style="font-size: 24px; margin-bottom: 20px;">WELCOME TO THE CLUB, YOU LEGEND!</h1>
+    <h1 style="font-size: 24px; margin-bottom: 20px;">Welcome to the club, you legend!</h1>
     <p>Thanks for joining STAK'D. You're now a legendary part of a community that doesn't settle for average.</p>
     
     <div style="text-align: center; margin: 30px 0;">
@@ -133,7 +133,7 @@ export function getShippingUpdateHtml(name: string, orderRef: string, trackingNu
   const trackingUrl = `https://www.royalmail.com/track-your-item?trackNumber=${trackingNumber}`;
 
   return wrapTemplate(`
-    <h1 style="font-size: 24px; margin-bottom: 20px;">YOUR BARS ARE EN ROUTE!</h1>
+    <h1 style="font-size: 24px; margin-bottom: 20px;">Your bars are en route!</h1>
     <p>Hi ${name},</p>
     <p>Great news! Your STAK'D order <strong>#${orderRef}</strong> has been shipped and is heading your way.</p>
     <p>Expect to receive your package within 1-2 business days, unless Royal Mail are on strike,lol.</p>
