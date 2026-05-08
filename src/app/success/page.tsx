@@ -51,6 +51,9 @@ function SuccessContent() {
           ? `Order #${order.id.substring(0, 8).toUpperCase()} has been received. Our kitchen is getting ready to prepare your custom treats!`
           : "Thank you for your order! We have received your payment and our kitchen will start preparing your custom chocolate bars soon."
         }
+        <span style={{ display: 'block', fontSize: '0.9rem', marginTop: '1rem', fontStyle: 'italic' }}>
+          A confirmation receipt has been sent to your email. Please check your spam or junk folder if you don't see it.
+        </span>
       </p>
 
       {order && (

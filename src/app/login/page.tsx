@@ -14,6 +14,7 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
   const supabase = createClient();
@@ -22,6 +23,7 @@ function LoginContent() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -42,10 +44,10 @@ function LoginContent() {
         fetch('/api/auth/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name: email.split('@')[0] }) // Use first part of email as fallback name
+          body: JSON.stringify({ email, name: email.split('@')[0] })
         }).catch(err => console.error('Failed to send welcome email:', err));
 
-        alert('Check your email for the confirmation link!');
+        setSuccess('Check your email for the confirmation link! Be sure to check your spam/junk folder if you don\'t see it.');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -79,6 +81,12 @@ function LoginContent() {
         {error && (
           <div style={{ padding: '1rem', background: '#ffebee', color: '#c62828', marginBottom: '1.5rem', borderRadius: '2px', fontFamily: 'var(--font-outfit)', fontSize: '0.9rem' }}>
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div style={{ padding: '1rem', background: '#e8f5e9', color: '#2e7d32', marginBottom: '1.5rem', borderRadius: '2px', fontFamily: 'var(--font-outfit)', fontSize: '0.9rem' }}>
+            {success}
           </div>
         )}
 
