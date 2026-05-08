@@ -66,8 +66,6 @@ export default function Home() {
             <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
             <span>REAL INGREDIENTS</span>
             <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
-            <span>NO PALM OIL</span>
-            <span className="hero-badge-sep">&nbsp;·&nbsp;</span>
             <span>NO E-NUMBERS</span>
           </div>
         </div>

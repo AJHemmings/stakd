@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 
 type OrderStatus = 'RECEIVED' | 'PREPARING' | 'BAKED' | 'OUT_FOR_DELIVERY' | 'DELIVERED';
 
@@ -16,6 +17,7 @@ interface RawAddress {
 
 interface Order {
   id: string;
+  realId: string;
   customer: string;
   email: string;
   address: string;
@@ -27,6 +29,7 @@ interface Order {
   status: OrderStatus;
   notes?: string;
   batchId?: string | null;
+  trackingNumber?: string;
 }
 
 function formatAddress(addr: RawAddress | null): string {
@@ -51,6 +54,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
+  const [pendingTracking, setPendingTracking] = useState('');
   const [showPrintSummary, setShowPrintSummary] = useState(false);
   const [printView, setPrintView] = useState<'SELECT' | 'PREP' | 'LABELS'>('SELECT');
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -84,7 +88,8 @@ export default function AdminOrdersPage() {
         paymentStatus: o.payment_status === 'paid' ? 'PAID' : 'PENDING',
         status: o.fulfillment_status as OrderStatus,
         notes: o.notes,
-        batchId: o.batch_id
+        batchId: o.batch_id,
+        trackingNumber: o.tracking_number
       }));
       setOrders(mappedOrders);
     }
@@ -109,6 +114,7 @@ export default function AdminOrdersPage() {
   const handleOpenModal = (order: Order) => {
     setSelectedOrder(order);
     setPendingStatus(order.status);
+    setPendingTracking(order.trackingNumber || '');
   };
 
   const handleStatusSave = async () => {
@@ -119,15 +125,23 @@ export default function AdminOrdersPage() {
     const res = await fetch('/api/admin/orders', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [(realOrder as any).realId], updates: { fulfillment_status: pendingStatus } }),
+      body: JSON.stringify({ 
+        ids: [realOrder.realId], 
+        updates: { 
+          fulfillment_status: pendingStatus,
+          tracking_number: pendingTracking 
+        } 
+      }),
     });
 
     if (!res.ok) {
       const { error } = await res.json();
       alert(`Error updating status: ${error}`);
     } else {
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: pendingStatus } : o));
+      // Close modal first for better UX
       setSelectedOrder(null);
+      // Then update local state
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: pendingStatus, trackingNumber: pendingTracking } : o));
     }
   };
 
@@ -416,6 +430,16 @@ export default function AdminOrdersPage() {
               <p style={{ fontSize: '0.85rem', color: 'var(--grey)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
                 Changing this status will update the tracker on the customer's profile page.
               </p>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--grey)', marginBottom: '0.5rem', fontWeight: 700 }}>TRACKING NUMBER</label>
+                <Input 
+                  value={pendingTracking}
+                  onChange={(e) => setPendingTracking(e.target.value)}
+                  placeholder="Enter tracking number..."
+                  style={{ background: 'var(--white)', borderColor: 'var(--cream-dark)' }}
+                />
+              </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
                 {/* Only show statuses that come AFTER Received */}
@@ -446,7 +470,7 @@ export default function AdminOrdersPage() {
                 variant="primary" 
                 style={{ width: '100%' }} 
                 onClick={handleStatusSave}
-                disabled={pendingStatus === selectedOrder.status}
+                disabled={pendingStatus === selectedOrder.status && pendingTracking === (selectedOrder.trackingNumber || '')}
               >
                 Save Update
               </Button>

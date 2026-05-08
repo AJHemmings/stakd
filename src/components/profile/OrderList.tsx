@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 
 const STATUS_STYLES: Record<string, { label: string; color: string; bg: string }> = {
   RECEIVED: { label: 'Order Received', color: '#e65100', bg: '#fff3e0' },
@@ -23,6 +24,7 @@ export interface Order {
   fulfillment_status: string;
   total_amount: number;
   items?: OrderItem[];
+  tracking_number?: string;
 }
 
 function OrderRow({ order, onTicketCreated }: { order: Order; onTicketCreated: () => void }) {
@@ -98,9 +100,37 @@ function OrderRow({ order, onTicketCreated }: { order: Order; onTicketCreated: (
             </div>
           </div>
 
-          {/* Support section */}
-          <div style={{ borderTop: '1px solid var(--cream-dark)', padding: '1rem 1.5rem' }}>
-            {submitted ? (
+            {order.tracking_number && (
+              <div style={{ marginTop: '1.5rem', padding: '1.2rem', background: 'var(--white)', border: '1px solid var(--cream-dark)', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: 'var(--grey)', marginBottom: '0.3rem', fontWeight: 700, letterSpacing: '0.05em' }}>TRACKING NUMBER</p>
+                  <a 
+                    href={`https://www.royalmail.com/track-your-item?trackNumber=${order.tracking_number}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--dark)', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: 'var(--gold)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    {order.tracking_number}
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+                <a 
+                  href={`https://www.royalmail.com/track-your-item?trackNumber=${order.tracking_number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ background: 'var(--gold)', color: 'var(--dark)', padding: '0.4rem 0.8rem', borderRadius: '2px', fontSize: '0.7rem', fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', textDecoration: 'none', transition: 'opacity 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  TRACKED
+                </a>
+              </div>
+            )}
+
+            {/* Support section */}
+            <div style={{ borderTop: '1px solid var(--cream-dark)', padding: '1rem 1.5rem', marginTop: order.tracking_number ? '0' : '1.5rem' }}>
+              {submitted ? (
+
               <p style={{ fontSize: '0.9rem', color: '#2e7d32', fontFamily: 'var(--font-mono)' }}>
                 ✓ Support ticket submitted — we'll be in touch.
               </p>
