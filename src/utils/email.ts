@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = 'STAK\'D <hello@stakdbars.com>'; // Update this once domain is verified
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
+const FROM_EMAIL = 'STAK\'D <hello@stakdbars.com>';
 
 const BASE_STYLE = `
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
