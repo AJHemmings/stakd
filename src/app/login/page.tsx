@@ -37,6 +37,14 @@ function LoginContent() {
           },
         });
         if (error) throw error;
+        
+        // Trigger welcome email
+        fetch('/api/auth/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: email.split('@')[0] }) // Use first part of email as fallback name
+        }).catch(err => console.error('Failed to send welcome email:', err));
+
         alert('Check your email for the confirmation link!');
       } else {
         const { error } = await supabase.auth.signInWithPassword({

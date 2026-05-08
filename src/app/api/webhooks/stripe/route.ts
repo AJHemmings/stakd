@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { createAdminClient } from '../../../../utils/supabase/admin';
 import { headers } from 'next/headers';
 import { syncOrderToSheets } from '../../../../utils/google-sheets';
+import { sendOrderConfirmationEmail } from '../../../../utils/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
   apiVersion: '2026-03-25.dahlia' as any,
@@ -178,6 +179,22 @@ export async function POST(req: Request) {
       });
     } catch (sheetError) {
       console.error('Failed to sync to Google Sheets:', sheetError);
+    }
+
+    // 7. Send Order Confirmation Email
+    if (customerEmail) {
+      const orderRef = order.id.substring(0, 8).toUpperCase();
+      try {
+        await sendOrderConfirmationEmail(
+          customerEmail, 
+          customerName || 'Legend', 
+          orderRef, 
+          cartItems.map((i: any) => ({ name: i.name, quantity: i.q, base: i.base, price: i.price })), 
+          totalAmount
+        );
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
     }
 
     console.log(`Order ${order.id} created from Stripe session ${stripeSessionId}`);
