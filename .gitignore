@@ -45,4 +45,6 @@ next-env.d.ts
 
 # local handover / session notes
 HANDOVER.md
-INTERVIEW-PREP.html
+
+# AI-reference specs and plans — never commit
+docs/superpowers/
