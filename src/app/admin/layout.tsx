@@ -1,12 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
-import { createClient } from '../../utils/supabase/server';
+import { getAdminUser } from '../../utils/auth/require-admin';
 import { redirect } from 'next/navigation';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
+  const user = await getAdminUser()
+  if (!user) {
     redirect('/login')
   }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { createClient } from '../../utils/supabase/server';
+import { isAdminEmail } from '../../utils/auth/require-admin';
 import { CartCount } from '../cart/CartCount';
 
 export async function Navbar() {
@@ -38,7 +39,7 @@ export async function Navbar() {
             FAQ
           </Link>
         </li>
-        {user?.user_metadata?.role === 'admin' && (
+        {isAdminEmail(user?.email) && (
           <li>
             <Link href="/admin" style={{
               color: 'var(--gold)',

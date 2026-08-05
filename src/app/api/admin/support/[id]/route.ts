@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../../utils/supabase/admin';
+import { requireAdmin } from '../../../../../utils/auth/require-admin';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -18,6 +22,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id } = await params;
   const { message } = await req.json();
   if (!message?.trim()) return NextResponse.json({ error: 'Message required' }, { status: 400 });

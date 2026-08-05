@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../utils/supabase/admin';
+import { requireAdmin } from '../../../../utils/auth/require-admin';
 
 function getWeekStart(date: Date): string {
   const d = new Date(date);
@@ -9,6 +10,9 @@ function getWeekStart(date: Date): string {
 }
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const supabase = createAdminClient();
 
   const [{ data: orders }, { data: items }] = await Promise.all([

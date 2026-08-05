@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../utils/supabase/admin';
 import { sendShippingUpdateEmail } from '../../../../utils/email';
+import { requireAdmin } from '../../../../utils/auth/require-admin';
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('orders')
@@ -14,6 +18,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { ids, batchId, updates } = await req.json();
   const supabase = createAdminClient();
 

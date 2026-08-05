@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../utils/supabase/admin';
+import { requireAdmin } from '../../../../utils/auth/require-admin';
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('support_tickets')
@@ -13,6 +17,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { id, status, admin_notes } = await req.json();
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 

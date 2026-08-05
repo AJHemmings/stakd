@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { sendWelcomeEmail, sendOrderConfirmationEmail, sendShippingUpdateEmail } from '@/utils/email';
+import { requireAdmin } from '@/utils/auth/require-admin';
 
+// This route sends real mail from the verified domain, so it is admin-only —
+// unguarded it is an open relay that anyone can point at any address.
 export async function GET(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const { searchParams } = new URL(req.url);
   const email = searchParams.get('email');
   const type = searchParams.get('type') || 'welcome';

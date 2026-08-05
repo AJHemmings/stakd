@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../utils/supabase/admin';
+import { requireAdmin } from '../../../../utils/auth/require-admin';
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('voucher_codes')
@@ -12,6 +16,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   const body = await req.json();
   const supabase = createAdminClient();
   const { data, error } = await supabase
