@@ -40,11 +40,13 @@ function LoginContent() {
         });
         if (error) throw error;
         
-        // Trigger welcome email
+        // Trigger welcome email. Only the address is sent — the route verifies
+        // it against a just-created account and derives the name from it, so
+        // nothing here is trusted as a destination.
         fetch('/api/auth/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name: email.split('@')[0] })
+          body: JSON.stringify({ email })
         }).catch(err => console.error('Failed to send welcome email:', err));
 
         setSuccess('Check your email for the confirmation link! Be sure to check your spam/junk folder if you don\'t see it.');
